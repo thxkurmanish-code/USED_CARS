@@ -1,13 +1,10 @@
-import { BrandMark } from "@/components/brand-mark";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-sand px-6 py-8 text-ink sm:px-10 lg:px-16">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between">
-        <BrandMark />
-        <span className="text-sm font-medium text-slate-500">Marketplace foundation</span>
-      </nav>
+      <SiteHeader />
       <section className="mx-auto flex min-h-[72vh] max-w-6xl items-center">
         <div className="max-w-3xl">
           <p className="mb-5 text-sm font-semibold uppercase tracking-[0.22em] text-ember">Dream Car Bazaar</p>

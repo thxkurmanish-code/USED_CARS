@@ -1,5 +1,16 @@
 from enum import StrEnum
 
+from sqlalchemy import Enum
+
+
+def database_enum(enum_class: type[StrEnum], name: str) -> Enum:
+    """Map Python enum values—not member names—to PostgreSQL enum values."""
+    return Enum(
+        enum_class,
+        name=name,
+        values_callable=lambda enum_type: [member.value for member in enum_type],
+    )
+
 
 class UserRole(StrEnum):
     CUSTOMER = "customer"

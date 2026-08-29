@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
@@ -22,6 +23,20 @@ router = APIRouter(prefix="/listings", tags=["listings"])
 def browse_listings(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50), brand: str | None = None, city: str | None = None, min_price: int | None = Query(None, ge=0), max_price: int | None = Query(None, ge=0), session: Session = Depends(get_db_session)) -> ListingPage:
     items, total = ListingService.browse(session, page=page, page_size=page_size, brand=brand, city=city, min_price=min_price, max_price=max_price)
     return ListingPage(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/mine", response_model=list[ListingDetail])
+def get_my_listings(
+    session: Session = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> list[CarListing]:
+    return list(
+        session.scalars(
+            select(CarListing)
+            .where(CarListing.owner_id == current_user.id, CarListing.is_archived.is_(False))
+            .order_by(CarListing.created_at.desc())
+        ).all()
+    )
 
 
 @router.get("/{listing_id}", response_model=ListingDetail)

@@ -3,6 +3,7 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:800
 export async function apiClient<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
+    credentials: "include",
     headers: { Accept: "application/json", ...options?.headers }
   });
 

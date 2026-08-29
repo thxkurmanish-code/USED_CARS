@@ -4,12 +4,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.enums import EnquiryStatus, ReportStatus
+from app.models.enums import EnquiryStatus, ReportStatus, database_enum
 
 if TYPE_CHECKING:
     from app.models.listing import CarListing
@@ -43,7 +43,7 @@ class Enquiry(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     seller_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[EnquiryStatus] = mapped_column(
-        Enum(EnquiryStatus, name="enquiry_status"), default=EnquiryStatus.NEW, nullable=False
+        database_enum(EnquiryStatus, "enquiry_status"), default=EnquiryStatus.NEW, nullable=False
     )
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -65,7 +65,7 @@ class ListingReport(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     reason: Mapped[str] = mapped_column(String(500), nullable=False)
     details: Mapped[str | None] = mapped_column(Text)
     status: Mapped[ReportStatus] = mapped_column(
-        Enum(ReportStatus, name="report_status"), default=ReportStatus.OPEN, nullable=False
+        database_enum(ReportStatus, "report_status"), default=ReportStatus.OPEN, nullable=False
     )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

@@ -9,7 +9,6 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
-    Enum,
     ForeignKey,
     Index,
     Integer,
@@ -23,7 +22,14 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.enums import BodyType, FuelType, ListingStatus, SellerType, TransmissionType
+from app.models.enums import (
+    BodyType,
+    FuelType,
+    ListingStatus,
+    SellerType,
+    TransmissionType,
+    database_enum,
+)
 
 if TYPE_CHECKING:
     from app.models.engagement import Enquiry, ListingReport, WishlistItem
@@ -55,11 +61,11 @@ class CarListing(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     registration_year: Mapped[int | None] = mapped_column(SmallInteger)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     kilometers_driven: Mapped[int] = mapped_column(Integer, nullable=False)
-    fuel_type: Mapped[FuelType] = mapped_column(Enum(FuelType, name="fuel_type"), nullable=False)
+    fuel_type: Mapped[FuelType] = mapped_column(database_enum(FuelType, "fuel_type"), nullable=False)
     transmission: Mapped[TransmissionType] = mapped_column(
-        Enum(TransmissionType, name="transmission_type"), nullable=False
+        database_enum(TransmissionType, "transmission_type"), nullable=False
     )
-    body_type: Mapped[BodyType] = mapped_column(Enum(BodyType, name="body_type"), nullable=False)
+    body_type: Mapped[BodyType] = mapped_column(database_enum(BodyType, "body_type"), nullable=False)
     color: Mapped[str | None] = mapped_column(String(60))
     owner_count: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     city: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -67,10 +73,10 @@ class CarListing(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     features: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
     seller_type: Mapped[SellerType] = mapped_column(
-        Enum(SellerType, name="seller_type"), nullable=False
+        database_enum(SellerType, "seller_type"), nullable=False
     )
     status: Mapped[ListingStatus] = mapped_column(
-        Enum(ListingStatus, name="listing_status"), default=ListingStatus.DRAFT, nullable=False
+        database_enum(ListingStatus, "listing_status"), default=ListingStatus.DRAFT, nullable=False
     )
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -131,9 +137,11 @@ class ListingStatusEvent(UUIDPrimaryKeyMixin, Base):
     )
     actor_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     previous_status: Mapped[ListingStatus | None] = mapped_column(
-        Enum(ListingStatus, name="listing_status"), nullable=True
+        database_enum(ListingStatus, "listing_status"), nullable=True
     )
-    new_status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus, name="listing_status"), nullable=False)
+    new_status: Mapped[ListingStatus] = mapped_column(
+        database_enum(ListingStatus, "listing_status"), nullable=False
+    )
     reason: Mapped[str | None] = mapped_column(String(1_000))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()"), nullable=False
