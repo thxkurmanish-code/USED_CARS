@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import Boolean, CheckConstraint, Enum, ForeignKey, String
+from sqlalchemy import Boolean, CheckConstraint, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -26,6 +26,7 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_phone_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    auth_version: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     profile: Mapped[UserProfile | None] = relationship(back_populates="user", uselist=False)
     listings: Mapped[list[CarListing]] = relationship(back_populates="owner")

@@ -1,6 +1,6 @@
 import os
 
-os.environ.setdefault("APP_SECRET_KEY", "test-secret-not-for-production")
+os.environ.setdefault("APP_SECRET_KEY", "test-secret-not-for-production-with-adequate-length")
 
 from app.models import Base
 

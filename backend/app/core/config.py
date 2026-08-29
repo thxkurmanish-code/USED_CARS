@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     app_secret_key: str
     frontend_origin: str = "http://localhost:3000"
+    access_token_expire_minutes: int = 30
 
     @property
     def is_development(self) -> bool:
