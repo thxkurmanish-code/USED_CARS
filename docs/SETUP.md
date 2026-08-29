@@ -55,3 +55,13 @@ ruff check .
 ```
 
 Database migrations will be added in Milestone 2. At that point this guide will include the exact Alembic commands.
+
+## Database migrations
+
+Milestone 2 provides the first migration. After starting PostgreSQL and configuring `DATABASE_URL`, run:
+
+```powershell
+cd backend
+alembic upgrade head
+alembic current
+```
