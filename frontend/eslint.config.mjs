@@ -4,6 +4,17 @@ import { fileURLToPath } from "node:url";
 
 const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
 
-const config = [...compat.extends("next/core-web-vitals", "next/typescript")];
+const config = [
+  {
+    ignores: [
+      ".next/**",
+      "next-env.d.ts",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**"
+    ]
+  },
+  ...compat.extends("next/core-web-vitals", "next/typescript")
+];
 
 export default config;

@@ -7,6 +7,7 @@
 frontend/node_modules/
 frontend/.next/
 frontend/coverage/
+frontend/tsconfig.tsbuildinfo
 
 # Python
 backend/.venv/
