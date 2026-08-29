@@ -4,6 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 COPY pyproject.toml ./
+COPY app ./app
 RUN pip install --upgrade pip && pip install -e ".[dev]"
 
 FROM base AS development

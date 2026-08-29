@@ -22,6 +22,12 @@ docker compose up --build
 
 The frontend is at `http://localhost:3000`. The API health endpoint is at `http://localhost:8000/health`. Stop the environment with `docker compose down`; add `--volumes` only when you deliberately want to remove local database data.
 
+For a detached background start, use `docker compose up --build -d`. Confirm every service is running with `docker compose ps`, then apply database migrations:
+
+```powershell
+docker compose exec backend alembic upgrade head
+```
+
 ## Running without Docker
 
 Start PostgreSQL and Redis separately, create `backend/.env` with a local `DATABASE_URL` and `REDIS_URL`, then run:
