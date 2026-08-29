@@ -1,4 +1,5 @@
 import { BrandMark } from "@/components/brand-mark";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -16,6 +17,10 @@ export default function HomePage() {
           <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">
             The marketplace experience is being carefully built for dealers and independent sellers alike.
           </p>
+          <div className="mt-9 flex flex-wrap gap-4">
+            <Link className="rounded-full bg-ink px-6 py-3 font-semibold text-white" href="/cars">Browse cars</Link>
+            <Link className="rounded-full border border-slate-300 px-6 py-3 font-semibold" href="/sell">Sell your car</Link>
+          </div>
         </div>
       </section>
     </main>
