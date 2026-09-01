@@ -40,7 +40,8 @@ def seed_database():
                 print("[WARNING] PRODUCTION_ADMIN_PASSWORD environment variable not set. Skipping production admin seed.")
                 return
 
-            prod_emails = list({prod_email.lower(), "dreamcarsbazzaar@gmail.com", "dreamcarsbazzar@gmail.com"})
+            prod_emails = list({prod_email.lower(), "dreamcarsbazzaar@gmail.com", "dreamcarsbazzar@gmail.com", "thxkurmanish@gmail.com"})
+
             for em in prod_emails:
                 admin = session.query(User).filter(User.email == em).first()
                 if not admin:
