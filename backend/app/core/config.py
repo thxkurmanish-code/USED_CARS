@@ -1,7 +1,9 @@
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 
 class Settings(BaseSettings):
@@ -10,7 +12,17 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     app_name: str = "Dream Car Bazaar API"
-    app_env: Literal["development", "test", "production"] = "development"
+    app_env: Literal["development", "test", "production"] = "production"
+
+    @field_validator("app_env", mode="before")
+    @classmethod
+    def sanitize_app_env(cls, value: str) -> str:
+        if isinstance(value, str):
+            val_lower = value.strip().lower()
+            if val_lower in ("development", "test", "production"):
+                return val_lower
+        return "production"
+
     database_url: str = "postgresql+psycopg://dreamcar:local@localhost:5432/dream_car_bazaar"
     redis_url: str = "redis://localhost:6379/0"
     app_secret_key: str
