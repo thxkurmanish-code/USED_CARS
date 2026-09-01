@@ -26,3 +26,6 @@ Thumbs.db
 
 # Generated local storage
 localstack-data/
+backend/dev.db
+backend/uploads/
+

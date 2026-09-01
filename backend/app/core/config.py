@@ -17,9 +17,23 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3000"
     access_token_expire_minutes: int = 30
 
+    # S3 Object Storage Configuration
+    s3_bucket_name: str | None = None
+    s3_endpoint_url: str | None = None
+    s3_access_key_id: str | None = None
+    s3_secret_access_key: str | None = None
+    s3_region_name: str = "us-east-1"
+    s3_public_custom_domain: str | None = None
+
+    # Production Admin Configuration
+    production_admin_email: str = "dreamcarsbazzaar@gmail.com"
+    production_admin_password: str | None = None
+
+
     @property
     def is_development(self) -> bool:
         return self.app_env == "development"
+
 
 
 @lru_cache

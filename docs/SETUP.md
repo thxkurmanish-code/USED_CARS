@@ -1,73 +1,105 @@
-# Setup
+# 🛠️ Dream Car Bazaar — System Setup & Installation Guide
 
-## Prerequisites
+This document provides complete instructions for setting up **Dream Car Bazaar** both for local development and for production deployment.
 
-- Docker Desktop with Docker Compose
-- Node.js 22 or later for running the frontend without containers
-- Python 3.12 or later for running the backend without containers
+---
 
-## Docker development (recommended)
+## 📋 System Prerequisites
 
-Copy the environment template:
+| Component | Minimum Version | Notes |
+| :--- | :--- | :--- |
+| **Python** | `3.11+` | Required for backend FastAPI service |
+| **Node.js** | `18+` | Required for frontend Next.js application |
+| **Docker & Compose** | `20.10+` | Recommended for full containerized stack |
+| **PostgreSQL** | `14+` | Production relational database engine |
+| **Redis** | `7+` | Cache & session storage |
 
-```powershell
-Copy-Item .env.example .env
+---
+
+## ⚡ Option 1: Quick Start with Docker Compose (Recommended)
+
+Docker Compose starts PostgreSQL, Redis, FastAPI Backend, and Next.js Frontend in isolated containers.
+
+### 1. Copy Environment Configuration
+```bash
+cp .env.example .env
 ```
 
-Change `POSTGRES_PASSWORD` and `APP_SECRET_KEY` in `.env`, then start all local services:
-
-```powershell
-docker compose up --build
+### 2. Configure Secrets in `.env`
+Edit `.env` to set your secrets:
+```env
+APP_ENV=development
+APP_SECRET_KEY=generate-a-64-character-random-key-here
+POSTGRES_PASSWORD=your-secure-postgres-password
+DATABASE_URL=postgresql+psycopg://dreamcar:your-secure-postgres-password@postgres:5432/dream_car_bazaar
 ```
 
-The frontend is at `http://localhost:3000`. The API health endpoint is at `http://localhost:8000/health`. Stop the environment with `docker compose down`; add `--volumes` only when you deliberately want to remove local database data.
-
-For a detached background start, use `docker compose up --build -d`. Confirm every service is running with `docker compose ps`, then apply database migrations:
-
-```powershell
-docker compose exec backend alembic upgrade head
+### 3. Launch Container Stack
+```bash
+docker compose up --build -d
 ```
 
-## Running without Docker
+### 4. Seed Database
+```bash
+docker compose exec backend python scripts/seed.py
+```
 
-Start PostgreSQL and Redis separately, create `backend/.env` with a local `DATABASE_URL` and `REDIS_URL`, then run:
+### 5. Access Services
+- **Frontend Marketplace:** [http://localhost:3000](http://localhost:3000)
+- **Backend API & Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **API Health Endpoint:** [http://localhost:8000/health](http://localhost:8000/health)
 
-```powershell
+---
+
+## 💻 Option 2: Local Development Setup (Without Docker)
+
+### 1. Backend Setup (FastAPI & Python)
+```bash
 cd backend
+
+# Create Virtual Environment
 python -m venv .venv
+
+# Activate Virtual Environment
+# Windows PowerShell:
 .\.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
-uvicorn app.main:app --reload --port 8000
+# Linux / macOS:
+source .venv/bin/activate
+
+# Install Dependencies
+pip install -r requirements.txt
+
+# Seed Database
+python scripts/seed.py
+
+# Start Backend Dev Server
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-In another terminal:
-
-```powershell
+### 2. Frontend Setup (Next.js & TypeScript)
+```bash
 cd frontend
+
+# Install Node Packages
 npm install
-npm run dev
+
+# Start Next.js Dev Server
+npm run dev -- -p 3000
 ```
 
-## Checks
+---
 
-```powershell
-cd frontend
-npm run lint
-npm run typecheck
+## 🧪 Running Code Quality & Test Suites
 
-cd ../backend
-pytest
-ruff check .
-```
-
-Database migrations will be added in Milestone 2. At that point this guide will include the exact Alembic commands.
-
-## Database migrations
-
-Milestone 2 provides the first migration. After starting PostgreSQL and configuring `DATABASE_URL`, run:
-
-```powershell
+### Backend Tests
+```bash
 cd backend
-alembic upgrade head
-alembic current
+python -m pytest
+```
+
+### Frontend Typechecking & Linting
+```bash
+cd frontend
+npm run typecheck
+npm run lint
 ```

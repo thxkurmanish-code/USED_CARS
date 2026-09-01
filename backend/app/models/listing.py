@@ -16,13 +16,15 @@ from sqlalchemy import (
     SmallInteger,
     String,
     Text,
+    func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.base import Base, PORTABLE_JSON, TimestampMixin, UUIDPrimaryKeyMixin
 from app.models.enums import (
+
+
     BodyType,
     FuelType,
     ListingStatus,
@@ -45,9 +47,9 @@ class CarListing(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             name="valid_registration_year",
         ),
         CheckConstraint("price > 0", name="positive_price"),
+
         CheckConstraint("kilometers_driven >= 0", name="non_negative_kilometers"),
         CheckConstraint("owner_count BETWEEN 0 AND 20", name="valid_owner_count"),
-        CheckConstraint("dream_score IS NULL OR dream_score BETWEEN 0 AND 100", name="valid_dream_score"),
         Index("ix_car_listings_discovery", "status", "is_archived", "created_at"),
         Index("ix_car_listings_filters", "brand", "model", "manufacturing_year", "price"),
         Index("ix_car_listings_location", "city", "state"),
@@ -71,7 +73,7 @@ class CarListing(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     city: Mapped[str] = mapped_column(String(100), nullable=False)
     state: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    features: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
+    features: Mapped[list[str]] = mapped_column(PORTABLE_JSON, default=list, nullable=False)
     seller_type: Mapped[SellerType] = mapped_column(
         database_enum(SellerType, "seller_type"), nullable=False
     )
@@ -82,8 +84,9 @@ class CarListing(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rejection_reason: Mapped[str | None] = mapped_column(String(1_000))
-    dream_score: Mapped[int | None] = mapped_column(SmallInteger)
-    dream_score_explanation: Mapped[dict[str, object] | None] = mapped_column(JSONB)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
 
     owner: Mapped[User] = relationship(back_populates="listings")
     images: Mapped[list[CarImage]] = relationship(
@@ -105,13 +108,8 @@ class CarImage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint("width IS NULL OR width > 0", name="positive_width"),
         CheckConstraint("height IS NULL OR height > 0", name="positive_height"),
         Index("ix_car_images_listing_sort", "listing_id", "sort_order"),
-        Index(
-            "uq_car_images_primary_per_listing",
-            "listing_id",
-            unique=True,
-            postgresql_where=text("is_primary"),
-        ),
     )
+
 
     listing_id: Mapped[UUID] = mapped_column(
         ForeignKey("car_listings.id", ondelete="CASCADE"), nullable=False
@@ -144,8 +142,9 @@ class ListingStatusEvent(UUIDPrimaryKeyMixin, Base):
     )
     reason: Mapped[str | None] = mapped_column(String(1_000))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=text("now()"), nullable=False
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
 
     listing: Mapped[CarListing] = relationship(back_populates="status_events")
     actor: Mapped[User | None] = relationship(back_populates="listing_status_events")

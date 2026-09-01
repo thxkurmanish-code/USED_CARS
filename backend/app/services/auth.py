@@ -15,8 +15,12 @@ class AuthService:
             raise ValueError("An account already exists for this email address")
 
         user = User(email=email, password_hash=hash_password(payload.password))
-        user.profile = UserProfile(display_name=payload.display_name.strip())
+        user.profile = UserProfile(
+            display_name=payload.display_name.strip(),
+            phone_number=payload.phone_number.strip() if payload.phone_number else None,
+        )
         session.add(user)
+
         session.flush()
         return user
 

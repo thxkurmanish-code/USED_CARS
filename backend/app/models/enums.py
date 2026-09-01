@@ -76,3 +76,13 @@ class ReportStatus(StrEnum):
     REVIEWING = "reviewing"
     RESOLVED = "resolved"
     DISMISSED = "dismissed"
+
+
+class TestDriveStatus(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    RESCHEDULED = "rescheduled"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+

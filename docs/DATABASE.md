@@ -1,31 +1,66 @@
-# Database
+# 🗄️ Dream Car Bazaar — Database Schema & Data Persistence Guide
 
-PostgreSQL is the authoritative data store. The initial Alembic revision creates users, profiles, car listings, image metadata, listing-status history, wishlists, enquiries, reports, and audit events.
+PostgreSQL is the primary database engine for **Dream Car Bazaar**. The database schema enforces relational integrity, foreign key cascading rules, composite indexes, and value check constraints.
 
-Database rules for all future migrations:
+---
 
-- Use foreign keys, constraints, and indexes in the database—not only in application code.
-- Use UTC timestamps and a migration for every persistent schema change.
-- Never store image binaries, passwords, tokens, or raw sensitive documents in public tables.
-- Prefer archive/soft-delete fields for operational records where history matters.
+## 📊 Relational Database Model Overview
 
-Local PostgreSQL runs as the `postgres` Docker Compose service. Production connections must be supplied through `DATABASE_URL`; credentials never belong in source control.
+```text
+users (id, email, password_hash, role, is_active)
+  ├── user_profiles (user_id -> users.id)
+  ├── car_listings (owner_id -> users.id)
+  │     ├── car_images (listing_id -> car_listings.id [CASCADE])
+  │     ├── listing_status_events (listing_id -> car_listings.id)
+  │     ├── test_drives (listing_id -> car_listings.id, customer_id -> users.id)
+  │     ├── chat_conversations (listing_id -> car_listings.id, customer_id -> users.id)
+  │     │     └── chat_messages (conversation_id -> chat_conversations.id)
+  │     ├── wishlist_items (listing_id -> car_listings.id, user_id -> users.id)
+  │     └── listing_reports (listing_id -> car_listings.id, reporter_id -> users.id)
+  └── password_reset_tokens (user_id -> users.id)
 
-## Initial schema
-
-`car_listings` retains public vehicle data and workflow state. It deliberately excludes document contents and image bytes. `car_images` holds safe storage metadata and object keys; actual images will be kept in private S3-compatible storage in Milestone 5.
-
-`listing_status_events` records every workflow transition. `audit_logs` will hold security-relevant admin actions, while `wishlist_items` prevents duplicate saved cars with a database uniqueness constraint.
-
-The listing state enum supports: `draft`, `pending_review`, `approved`, `active`, `rejected`, `suspended`, `sold`, and `expired`. State-transition authorization belongs in the later service layer; the database preserves the history and valid set of states.
-
-## Migrations
-
-From `backend/`, with PostgreSQL running and `DATABASE_URL` configured:
-
-```powershell
-alembic upgrade head
-alembic current
+business_contacts (id, business_name, phone_number, whatsapp_number, email, address, hours)
 ```
 
-Create future revisions with `alembic revision --autogenerate -m "describe change"`, review the generated migration, then apply it. Never use `Base.metadata.create_all()` in production.
+---
+
+## 🗃️ Key Table Specifications
+
+| Table | Description | Primary Key | Constraints & Indexes |
+| :--- | :--- | :--- | :--- |
+| `users` | User accounts | UUID | `UNIQUE(email)`, Role Enum (`customer`, `admin`) |
+| `user_profiles` | User profile details | UUID | `FK(user_id -> users.id)` |
+| `car_listings` | Pre-owned car inventory | UUID | `FK(owner_id -> users.id)`, Index(`brand`, `model`, `price`, `city`), Status Enum (`draft`, `pending_review`, `active`, `sold`, etc.) |
+| `car_images` | Vehicle photos metadata | UUID | `FK(listing_id -> car_listings.id ON DELETE CASCADE)`, Index(`listing_id`, `sort_order`) |
+| `test_drive_requests` | Appointment bookings | UUID | `FK(listing_id)`, `FK(customer_id)`, Status Enum (`pending`, `approved`, `rescheduled`, `rejected`, `completed`) |
+| `chat_conversations` | Buyer-Seller threads | UUID | `FK(listing_id)`, `FK(customer_id)` |
+| `chat_messages` | Live chat messages | UUID | `FK(conversation_id)`, `FK(sender_id)` |
+| `wishlist_items` | Saved car items | UUID | `UNIQUE(user_id, listing_id)` |
+| `business_contacts` | Showroom contact details | UUID | Centralized showroom phone, WhatsApp, email, hours |
+
+---
+
+## ⚙️ PostgreSQL Connection Pooling Configuration
+
+Connection pooling is configured in `backend/app/core/database.py` to prevent database exhaustion under concurrent multi-user load:
+
+```python
+engine_kwargs = {"pool_pre_ping": True}
+if settings.database_url.startswith("postgresql"):
+    engine_kwargs["pool_size"] = 10        # Active persistent connections
+    engine_kwargs["max_overflow"] = 20     # Temporary burst connection limit
+    engine_kwargs["pool_recycle"] = 1800   # Recycle connections after 30 mins
+```
+
+---
+
+## 🔄 Seeding & Migration Commands
+
+### Seeding Initial Data
+To populate initial sample data or create the production admin:
+```bash
+python scripts/seed.py
+```
+
+- In **Development Mode (`APP_ENV=development`)**: Seeds sample cars, test accounts, and sample chat threads.
+- In **Production Mode (`APP_ENV=production`)**: Only creates the single production admin user configured via `PRODUCTION_ADMIN_EMAIL` and `PRODUCTION_ADMIN_PASSWORD`.

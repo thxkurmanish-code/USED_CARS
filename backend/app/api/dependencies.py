@@ -46,3 +46,21 @@ def require_role(*roles: UserRole) -> Callable[[User], User]:
         return current_user
 
     return role_guard
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme),
+    session_token: str | None = Cookie(default=None),
+    session: Session = Depends(get_db_session),
+) -> User | None:
+    try:
+        payload = decode_access_token(token or session_token or "")
+        user_id = UUID(str(payload["sub"]))
+        token_version = int(payload["ver"])
+        user = session.get(User, user_id)
+        if user and user.is_active and user.auth_version == token_version:
+            return user
+    except Exception:
+        pass
+    return None
+

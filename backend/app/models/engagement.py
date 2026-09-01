@@ -5,11 +5,10 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.base import Base, PORTABLE_JSON, TimestampMixin, UUIDPrimaryKeyMixin
 from app.models.enums import EnquiryStatus, ReportStatus, database_enum
+
 
 if TYPE_CHECKING:
     from app.models.listing import CarListing
@@ -81,7 +80,8 @@ class AuditLog(UUIDPrimaryKeyMixin, Base):
     action: Mapped[str] = mapped_column(String(120), nullable=False)
     target_type: Mapped[str] = mapped_column(String(80), nullable=False)
     target_id: Mapped[UUID | None] = mapped_column()
-    metadata_json: Mapped[dict[str, object] | None] = mapped_column("metadata", JSONB)
+    metadata_json: Mapped[dict[str, object] | None] = mapped_column("metadata", PORTABLE_JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+

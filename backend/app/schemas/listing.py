@@ -22,8 +22,9 @@ class ListingCreateRequest(BaseModel):
     owner_count: int = Field(ge=0, le=20)
     city: str = Field(min_length=1, max_length=100)
     state: str = Field(min_length=1, max_length=100)
-    description: str = Field(min_length=20, max_length=10_000)
+    description: str = Field(min_length=1, max_length=10_000)
     features: list[str] = Field(default_factory=list, max_length=40)
+
     seller_type: SellerType = SellerType.INDIVIDUAL
 
 
@@ -31,11 +32,25 @@ class ListingUpdateRequest(ListingCreateRequest):
     pass
 
 
+class CarImageResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    storage_key: str
+    original_filename: str
+    content_type: str
+    byte_size: int
+    sort_order: int
+    is_primary: bool
+
+
 class ListingSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    owner_id: UUID
     brand: str
+
     model: str
     variant: str | None
     manufacturing_year: int
@@ -49,8 +64,10 @@ class ListingSummary(BaseModel):
     seller_type: SellerType
     status: ListingStatus
     is_featured: bool
-    dream_score: int | None
+    is_verified: bool = False
     created_at: datetime
+    images: list[CarImageResponse] = Field(default_factory=list)
+
 
 
 class ListingDetail(ListingSummary):
@@ -59,6 +76,7 @@ class ListingDetail(ListingSummary):
     owner_count: int
     description: str
     features: list[str]
+    rejection_reason: str | None = None
     updated_at: datetime
 
 
@@ -67,3 +85,4 @@ class ListingPage(BaseModel):
     total: int
     page: int
     page_size: int
+

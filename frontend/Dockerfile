@@ -20,4 +20,5 @@ COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 RUN npm install --omit=dev
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
+
