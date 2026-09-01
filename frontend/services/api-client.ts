@@ -1,9 +1,20 @@
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (envUrl && !envUrl.includes("localhost")) {
+    return envUrl;
+  }
+  if (typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
+    return "https://used-cars-vygo.onrender.com/api/v1";
+  }
+  return envUrl ?? "http://localhost:8000/api/v1";
+}
 
 export async function apiClient<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
+  const baseUrl = getApiBaseUrl();
   try {
-    response = await fetch(`${apiBaseUrl}${path}`, {
+    response = await fetch(`${baseUrl}${path}`, {
+
       ...options,
       credentials: "include",
       headers: { Accept: "application/json", ...options?.headers },
