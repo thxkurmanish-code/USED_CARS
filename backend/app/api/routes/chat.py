@@ -24,13 +24,19 @@ def get_or_create_conversation(
     listing_id: UUID = Query(...),
     session: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> Conversation:
+) -> dict[str, object]:
     listing = session.get(CarListing, listing_id)
     if listing is None or listing.is_archived:
         raise HTTPException(status_code=404, detail="Listing not found")
 
     conversation = session.scalar(
-        select(Conversation).where(
+        select(Conversation)
+        .options(
+            joinedload(Conversation.listing).joinedload(CarListing.images),
+            joinedload(Conversation.customer).joinedload(User.profile),
+            joinedload(Conversation.messages),
+        )
+        .where(
             Conversation.listing_id == listing_id,
             Conversation.customer_id == current_user.id,
         )
@@ -42,7 +48,33 @@ def get_or_create_conversation(
         session.commit()
         session.refresh(conversation)
 
-    return conversation
+    messages = sorted(conversation.messages, key=lambda m: m.created_at) if conversation.messages else []
+    last_message = messages[-1] if messages else None
+    unread_count = sum(1 for m in messages if not m.is_read and m.sender_id != current_user.id)
+
+    customer_info = None
+    if current_user.role == UserRole.ADMIN and conversation.customer:
+        cust_name = conversation.customer.profile.display_name if conversation.customer.profile and conversation.customer.profile.display_name else conversation.customer.email.split("@")[0]
+        cust_phone = conversation.customer.profile.phone_number if conversation.customer.profile else None
+        customer_info = {
+            "id": conversation.customer.id,
+            "display_name": cust_name,
+            "email": conversation.customer.email,
+            "phone_number": cust_phone,
+        }
+
+    return {
+        "id": conversation.id,
+        "listing_id": conversation.listing_id,
+        "customer_id": conversation.customer_id,
+        "created_at": conversation.created_at,
+        "updated_at": conversation.updated_at,
+        "listing": conversation.listing,
+        "customer": customer_info,
+        "last_message": last_message,
+        "unread_count": unread_count,
+    }
+
 
 
 @router.get("/conversations", response_model=list[ConversationResponse])
@@ -52,6 +84,7 @@ def list_conversations(
 ) -> list[dict[str, object]]:
     query = select(Conversation).options(
         joinedload(Conversation.listing).joinedload(CarListing.images),
+        joinedload(Conversation.customer).joinedload(User.profile),
         joinedload(Conversation.messages),
     )
 
@@ -66,6 +99,17 @@ def list_conversations(
         last_message = messages[-1] if messages else None
         unread_count = sum(1 for m in messages if not m.is_read and m.sender_id != current_user.id)
 
+        customer_info = None
+        if current_user.role == UserRole.ADMIN and conv.customer:
+            cust_name = conv.customer.profile.display_name if conv.customer.profile and conv.customer.profile.display_name else conv.customer.email.split("@")[0]
+            cust_phone = conv.customer.profile.phone_number if conv.customer.profile else None
+            customer_info = {
+                "id": conv.customer.id,
+                "display_name": cust_name,
+                "email": conv.customer.email,
+                "phone_number": cust_phone,
+            }
+
         result.append({
             "id": conv.id,
             "listing_id": conv.listing_id,
@@ -73,11 +117,13 @@ def list_conversations(
             "created_at": conv.created_at,
             "updated_at": conv.updated_at,
             "listing": conv.listing,
+            "customer": customer_info,
             "last_message": last_message,
             "unread_count": unread_count,
         })
 
     return result
+
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=list[ChatMessageResponse])

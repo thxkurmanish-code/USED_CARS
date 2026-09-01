@@ -107,9 +107,16 @@ export interface ConversationResponse {
   created_at: string;
   updated_at: string;
   listing?: ListingSummary | null;
+  customer?: {
+    id: string;
+    display_name: string;
+    email: string;
+    phone_number?: string | null;
+  } | null;
   last_message?: ChatMessage | null;
   unread_count?: number;
 }
+
 
 export interface BusinessContact {
   business_name: string;

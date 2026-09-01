@@ -23,6 +23,15 @@ class ChatMessageResponse(BaseModel):
 
 
 
+class CustomerDetailInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    display_name: str
+    email: str
+    phone_number: str | None = None
+
+
 class ConversationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -32,5 +41,7 @@ class ConversationResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     listing: ListingSummary | None = None
+    customer: CustomerDetailInfo | None = None
     last_message: ChatMessageResponse | None = None
     unread_count: int = 0
+

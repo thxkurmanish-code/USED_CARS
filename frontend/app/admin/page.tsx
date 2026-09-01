@@ -793,14 +793,52 @@ export default function AdminPage() {
               })}
             </div>
 
-            <div className="md:col-span-7 rounded-3xl border bg-white p-6 shadow-sm flex flex-col h-[500px]">
+            <div className="md:col-span-7 rounded-3xl border bg-white p-6 shadow-sm flex flex-col h-[560px]">
               {!selectedConvId ? (
                 <div className="flex flex-1 items-center justify-center text-xs text-slate-400">
                   Select a conversation thread to respond to customer questions.
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl">
+                  {(() => {
+                    const selectedConv = conversations.find((c) => c.id === selectedConvId);
+                    return (
+                      <>
+                        {selectedConv && (
+                          <div className="mb-3 rounded-2xl border bg-slate-900 p-4 text-white shadow-md">
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Customer Identity</p>
+                                <h4 className="text-base font-bold text-white flex items-center gap-1.5 mt-0.5">
+                                  👤 {selectedConv.customer?.display_name || "Customer"}
+                                </h4>
+                              </div>
+                              {selectedConv.listing && (
+                                <span className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
+                                  🚗 {selectedConv.listing.manufacturing_year} {selectedConv.listing.brand} {selectedConv.listing.model}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="mt-2.5 grid gap-2 text-xs text-slate-300 sm:grid-cols-2">
+                              <div>
+                                <span className="text-[9px] font-semibold uppercase text-slate-400 block">Email Address</span>
+                                <a href={`mailto:${selectedConv.customer?.email}`} className="font-semibold text-white hover:underline flex items-center gap-1">
+                                  📧 {selectedConv.customer?.email || "Not specified"}
+                                </a>
+                              </div>
+                              <div>
+                                <span className="text-[9px] font-semibold uppercase text-slate-400 block">Phone Number</span>
+                                <a href={`tel:${selectedConv.customer?.phone_number}`} className="font-semibold text-white hover:underline flex items-center gap-1">
+                                  📱 {selectedConv.customer?.phone_number || "Not specified"}
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl">
+
                     {chatMessages.map((msg) => {
                       const isMe = msg.sender_id === user.id;
                       const isRead = msg.is_read || msg.status === "read";
@@ -846,8 +884,12 @@ export default function AdminPage() {
                     </button>
                   </form>
                 </>
-              )}
-            </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
+
           </div>
         )}
 
