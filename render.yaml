@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: used-cars-api
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PRODUCTION_ADMIN_EMAIL
+        value: dreamcarsbazzaar@gmail.com
+      - key: PRODUCTION_ADMIN_PASSWORD
+        value: Carsdream@8954
+      - key: APP_SECRET_KEY
+        value: dreamcar-production-secret-key-2026-64chars
