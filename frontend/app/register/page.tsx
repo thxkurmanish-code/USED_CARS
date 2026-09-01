@@ -47,9 +47,11 @@ export default function RegisterPage() {
       });
       await refresh();
       router.push("/dashboard");
-    } catch {
-      setError("Use a unique email address and a 12+ character password with letters and numbers.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Use a unique email address and a 12+ character password with letters and numbers.";
+      setError(msg);
     } finally {
+
       setSubmitting(false);
     }
   }
