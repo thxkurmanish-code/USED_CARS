@@ -1,13 +1,24 @@
 function getApiBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (envUrl && !envUrl.includes("localhost")) {
-    return envUrl;
+  let envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!envUrl || envUrl.includes("localhost")) {
+    if (typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
+      envUrl = "https://used-cars-vygo.onrender.com/api/v1";
+    } else {
+      envUrl = "http://localhost:8000/api/v1";
+    }
   }
-  if (typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
-    return "https://used-cars-vygo.onrender.com/api/v1";
+  
+  envUrl = envUrl.replace(/\/+$/, "");
+  if (!envUrl.endsWith("/api/v1")) {
+    if (envUrl.endsWith("/api")) {
+      envUrl = `${envUrl}/v1`;
+    } else {
+      envUrl = `${envUrl}/api/v1`;
+    }
   }
-  return envUrl ?? "http://localhost:8000/api/v1";
+  return envUrl;
 }
+
 
 export async function apiClient<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
