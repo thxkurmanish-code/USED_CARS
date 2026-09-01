@@ -62,6 +62,20 @@ app.add_middleware(
 
 
 
+import traceback
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_detail = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    print(f"[ERROR] {request.method} {request.url}: {error_detail}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}", "traceback": error_detail},
+    )
+
 app.include_router(api_router)
 app.include_router(health_router)
+
 
