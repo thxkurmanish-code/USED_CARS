@@ -17,7 +17,13 @@ uploads_dir.mkdir(exist_ok=True)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     configure_logging()
+    try:
+        from scripts.seed import seed_database
+        seed_database()
+    except Exception as e:
+        print(f"[LIFESPAN] Seed status: {e}")
     yield
+
 
 
 settings = get_settings()

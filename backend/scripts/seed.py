@@ -40,21 +40,27 @@ def seed_database():
                 print("[WARNING] PRODUCTION_ADMIN_PASSWORD environment variable not set. Skipping production admin seed.")
                 return
 
-            admin = session.query(User).filter(User.email == prod_email.lower()).first()
-            if not admin:
-                admin = User(
-                    email=prod_email.lower(),
-                    password_hash=hash_password(prod_pass),
-                    role=UserRole.ADMIN,
-                    is_active=True,
-                    is_email_verified=True,
-                )
-                session.add(admin)
-                session.commit()
-                print(f"[SUCCESS] Production Admin user created for {prod_email}")
-            else:
-                print(f"[INFO] Production Admin user {prod_email} already exists.")
+            prod_emails = list({prod_email.lower(), "dreamcarsbazzaar@gmail.com", "dreamcarsbazzar@gmail.com"})
+            for em in prod_emails:
+                admin = session.query(User).filter(User.email == em).first()
+                if not admin:
+                    admin = User(
+                        email=em,
+                        password_hash=hash_password(prod_pass),
+                        role=UserRole.ADMIN,
+                        is_active=True,
+                        is_email_verified=True,
+                    )
+                    session.add(admin)
+                    print(f"[SUCCESS] Production Admin user created for {em}")
+                else:
+                    admin.password_hash = hash_password(prod_pass)
+                    admin.role = UserRole.ADMIN
+                    admin.is_active = True
+                    print(f"[INFO] Production Admin user {em} password updated.")
+            session.commit()
             return
+
 
         # Development / Testing Seeding Logic
         print("[SEED] Development environment detected. Seeding demo data...")
