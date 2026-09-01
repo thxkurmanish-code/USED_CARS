@@ -10,6 +10,8 @@ from app.api.router import api_router
 from app.api.routes.health import router as health_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+import app.models  # Ensure all models are registered
+
 
 uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)

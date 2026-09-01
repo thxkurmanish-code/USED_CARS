@@ -11,10 +11,10 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import engine, SessionLocal
 from app.core.security import hash_password
-from app.models.base import Base
+import app.models  # Registers all SQLAlchemy models in Base.metadata
+from app.models import Base, CarImage, CarListing, ListingStatusEvent, User, UserProfile
 from app.models.enums import BodyType, FuelType, ListingStatus, SellerType, TransmissionType, UserRole
-from app.models.user import User
-from app.models.listing import CarListing, CarImage, ListingStatusEvent
+
 
 
 SAMPLE_CAR_IMAGES = [
