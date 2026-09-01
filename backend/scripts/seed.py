@@ -33,30 +33,36 @@ def seed_database():
     try:
         if settings.app_env == "production":
             print("[SEED] Production environment detected.")
-            prod_email = settings.production_admin_email
+            prod_email = settings.production_admin_email.lower().strip()
             prod_pass = settings.production_admin_password or "Carsdream@8954"
-            prod_emails = list({prod_email.lower(), "dreamcarsbazzaar@gmail.com", "dreamcarsbazzar@gmail.com", "thxkurmanish@gmail.com"})
 
+            # Demote any unintended ADMIN accounts to CUSTOMER role
+            other_admins = session.query(User).filter(User.role == UserRole.ADMIN, User.email != prod_email).all()
+            for other_admin in other_admins:
+                other_admin.role = UserRole.CUSTOMER
+                print(f"[DEMOTE] Demoted non-production admin {other_admin.email} to CUSTOMER role.")
 
-            for em in prod_emails:
-                admin = session.query(User).filter(User.email == em).first()
-                if not admin:
-                    admin = User(
-                        email=em,
-                        password_hash=hash_password(prod_pass),
-                        role=UserRole.ADMIN,
-                        is_active=True,
-                        is_email_verified=True,
-                    )
-                    session.add(admin)
-                    print(f"[SUCCESS] Production Admin user created for {em}")
-                else:
-                    admin.password_hash = hash_password(prod_pass)
-                    admin.role = UserRole.ADMIN
-                    admin.is_active = True
-                    print(f"[INFO] Production Admin user {em} password updated.")
+            # Create or update the single production admin
+            admin = session.query(User).filter(User.email == prod_email).first()
+            if not admin:
+                admin = User(
+                    email=prod_email,
+                    password_hash=hash_password(prod_pass),
+                    role=UserRole.ADMIN,
+                    is_active=True,
+                    is_email_verified=True,
+                )
+                session.add(admin)
+                print(f"[SUCCESS] Single Production Admin user created for {prod_email}")
+            else:
+                admin.password_hash = hash_password(prod_pass)
+                admin.role = UserRole.ADMIN
+                admin.is_active = True
+                print(f"[INFO] Verified single Production Admin user for {prod_email}")
+
             session.commit()
             return
+
 
 
         # Development / Testing Seeding Logic
