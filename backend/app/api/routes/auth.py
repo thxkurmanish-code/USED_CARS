@@ -29,11 +29,12 @@ def set_session_cookie(response: Response, access_token: str) -> None:
         key="session_token",
         value=access_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=30 * 60,
         path="/",
     )
+
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
