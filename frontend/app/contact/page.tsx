@@ -124,8 +124,8 @@ export default function ContactPage() {
                     href={
                       contact?.google_maps_link && contact.google_maps_link.trim()
                         ? contact.google_maps_link
-                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            `${contact?.address ?? ""}, ${contact?.city ?? ""}, ${contact?.state ?? ""}`
+                        : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                            [contact?.address, contact?.city, contact?.state].filter(Boolean).join(", ")
                           )}`
                     }
                     target="_blank"
@@ -135,6 +135,7 @@ export default function ContactPage() {
                     📍 Get Showroom Directions
                   </a>
                 </div>
+
 
               </div>
             </div>
