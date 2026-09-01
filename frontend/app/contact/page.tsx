@@ -119,18 +119,23 @@ export default function ContactPage() {
                   <p className="mt-1 font-medium text-slate-900">{contact?.business_hours}</p>
                 </div>
 
-                {contact?.google_maps_link && (
-                  <div className="border-t pt-4">
-                    <a
-                      href={contact.google_maps_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-slate-800"
-                    >
-                      📍 Get Showroom Directions
-                    </a>
-                  </div>
-                )}
+                <div className="border-t pt-4">
+                  <a
+                    href={
+                      contact?.google_maps_link && contact.google_maps_link.trim()
+                        ? contact.google_maps_link
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            `${contact?.address ?? ""}, ${contact?.city ?? ""}, ${contact?.state ?? ""}`
+                          )}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-slate-800"
+                  >
+                    📍 Get Showroom Directions
+                  </a>
+                </div>
+
               </div>
             </div>
           </div>
