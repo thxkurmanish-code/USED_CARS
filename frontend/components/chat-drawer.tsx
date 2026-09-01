@@ -19,6 +19,11 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     async function initChat() {
@@ -32,6 +37,7 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
 
         const msgs = await apiClient<ChatMessage[]>(`/chat/conversations/${conv.id}/messages`);
         setMessages(msgs);
+        setTimeout(scrollToBottom, 100);
       } catch {
         // ignore
       } finally {
@@ -41,22 +47,62 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
     void initChat();
   }, [isOpen, listingId, user]);
 
+  // Real-time 2.5-second polling loop when drawer is open
+  useEffect(() => {
+    if (!isOpen || !conversation || !user) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const latestMsgs = await apiClient<ChatMessage[]>(`/chat/conversations/${conversation.id}/messages`);
+        setMessages((prev) => {
+          // Merge keeping any pending optimistic messages
+          const pending = prev.filter((m) => m.is_pending);
+          const serverMsgIds = new Set(latestMsgs.map((m) => m.id));
+          const filteredPending = pending.filter((m) => !serverMsgIds.has(m.id));
+          return [...latestMsgs, ...filteredPending];
+        });
+      } catch {
+        // ignore polling errors quietly
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [isOpen, conversation, user]);
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!inputMessage.trim() || !conversation) return;
+    const text = inputMessage.trim();
+    if (!text || !conversation || !user) return;
     setSending(true);
+
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg: ChatMessage = {
+      id: tempId,
+      conversation_id: conversation.id,
+      sender_id: user.id,
+      body: text,
+      is_read: false,
+      status: "sent",
+      is_pending: true,
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, tempMsg]);
+    setInputMessage("");
+    setTimeout(scrollToBottom, 50);
 
     try {
       const newMsg = await apiClient<ChatMessage>(`/chat/conversations/${conversation.id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: inputMessage.trim() }),
+        body: JSON.stringify({ body: text }),
       });
 
-      setMessages((prev) => [...prev, newMsg]);
-      setInputMessage("");
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...newMsg, status: "delivered" } : m)));
+      setTimeout(scrollToBottom, 50);
     } catch {
-      alert("Failed to send message.");
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      alert("Failed to send message. Please try again.");
     } finally {
       setSending(false);
     }
@@ -97,6 +143,7 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
             ) : (
               messages.map((msg) => {
                 const isMe = msg.sender_id === user.id;
+                const isRead = msg.is_read || msg.status === "read";
                 return (
                   <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div
@@ -104,15 +151,31 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
                         isMe ? "bg-slate-900 text-white rounded-br-none" : "bg-white border text-slate-800 rounded-bl-none"
                       }`}
                     >
-                      <p>{msg.body}</p>
-                      <span className={`block mt-1 text-[10px] ${isMe ? "text-slate-400 text-right" : "text-slate-400"}`}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </span>
+                      <p className="whitespace-pre-wrap break-words">{msg.body}</p>
+                      <div className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${isMe ? "text-slate-400" : "text-slate-400"}`}>
+                        <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        {isMe && (
+                          <span className="font-bold">
+                            {msg.is_pending ? (
+                              <span title="Sending (✓)">✓</span>
+                            ) : isRead ? (
+                              <span className="text-emerald-400 font-bold" title="Read (✓✓)">
+                                ✓✓
+                              </span>
+                            ) : (
+                              <span className="text-slate-400" title="Delivered (✓✓)">
+                                ✓✓
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           <form onSubmit={sendMessage} className="border-t p-3 bg-white flex gap-2">
@@ -136,3 +199,4 @@ export function ChatDrawer({ listingId, carTitle, isOpen, onClose }: ChatDrawerP
     </div>
   );
 }
+

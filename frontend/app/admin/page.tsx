@@ -131,6 +131,39 @@ export default function AdminPage() {
     }
   }, [user]);
 
+  // Real-time polling for active chat tab in Admin Console
+  useEffect(() => {
+    if (activeTab !== "chat" || !user || user.role !== "admin") return;
+    const interval = setInterval(async () => {
+      try {
+        const convs = await apiClient<ConversationResponse[]>("/chat/conversations");
+        setConversations(convs);
+      } catch {
+        // ignore
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    if (activeTab !== "chat" || !selectedConvId || !user || user.role !== "admin") return;
+    const interval = setInterval(async () => {
+      try {
+        const msgs = await apiClient<ChatMessage[]>(`/chat/conversations/${selectedConvId}/messages`);
+        setChatMessages((prev) => {
+          const pending = prev.filter((m) => m.is_pending);
+          const serverMsgIds = new Set(msgs.map((m) => m.id));
+          const filteredPending = pending.filter((m) => !serverMsgIds.has(m.id));
+          return [...msgs, ...filteredPending];
+        });
+      } catch {
+        // ignore
+      }
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [activeTab, selectedConvId, user]);
+
+
   const [adminFiles, setAdminFiles] = useState<File[]>([]);
   const [addCarError, setAddCarError] = useState<string | null>(null);
 
@@ -272,6 +305,8 @@ export default function AdminPage() {
     try {
       const msgs = await apiClient<ChatMessage[]>(`/chat/conversations/${convId}/messages`);
       setChatMessages(msgs);
+      const updatedConvs = await apiClient<ConversationResponse[]>("/chat/conversations");
+      setConversations(updatedConvs);
     } catch {
       // ignore
     }
@@ -279,19 +314,37 @@ export default function AdminPage() {
 
   async function sendAdminReply(e: FormEvent) {
     e.preventDefault();
-    if (!selectedConvId || !replyInput.trim()) return;
+    if (!selectedConvId || !replyInput.trim() || !user) return;
+    const text = replyInput.trim();
+    setReplyInput("");
+
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg: ChatMessage = {
+      id: tempId,
+      conversation_id: selectedConvId,
+      sender_id: user.id,
+      body: text,
+      is_read: false,
+      status: "sent",
+      is_pending: true,
+      created_at: new Date().toISOString(),
+    };
+
+    setChatMessages((prev) => [...prev, tempMsg]);
+
     try {
       const newMsg = await apiClient<ChatMessage>(`/chat/conversations/${selectedConvId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: replyInput.trim() }),
+        body: JSON.stringify({ body: text }),
       });
-      setChatMessages((prev) => [...prev, newMsg]);
-      setReplyInput("");
+      setChatMessages((prev) => prev.map((m) => (m.id === tempId ? { ...newMsg, status: "delivered" } : m)));
     } catch {
+      setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
       alert("Failed to send reply.");
     }
   }
+
 
   async function handleSaveContact(e: FormEvent) {
     e.preventDefault();
@@ -710,24 +763,34 @@ export default function AdminPage() {
           <div className="mt-8 grid gap-6 md:grid-cols-12">
             <div className="md:col-span-5 space-y-3">
               <h3 className="text-sm font-bold text-slate-700 uppercase">Conversations ({conversations.length})</h3>
-              {conversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  onClick={() => void openConversation(conv.id)}
-                  className={`cursor-pointer rounded-2xl border p-4 transition ${
-                    selectedConvId === conv.id ? "bg-slate-900 text-white" : "bg-white hover:bg-slate-50"
-                  }`}
-                >
-                  <p className="font-bold text-sm">
-                    {conv.listing ? `${conv.listing.brand} ${conv.listing.model}` : "Car Inquiry"}
-                  </p>
-                  {conv.last_message && (
-                    <p className={`mt-1 text-xs truncate ${selectedConvId === conv.id ? "text-slate-300" : "text-slate-500"}`}>
-                      {conv.last_message.body}
-                    </p>
-                  )}
-                </div>
-              ))}
+              {conversations.map((conv) => {
+                const unread = conv.unread_count || 0;
+                return (
+                  <div
+                    key={conv.id}
+                    onClick={() => void openConversation(conv.id)}
+                    className={`cursor-pointer rounded-2xl border p-4 transition flex items-center justify-between ${
+                      selectedConvId === conv.id ? "bg-slate-900 text-white" : "bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="font-bold text-sm truncate">
+                        {conv.listing ? `${conv.listing.brand} ${conv.listing.model}` : "Car Inquiry"}
+                      </p>
+                      {conv.last_message && (
+                        <p className={`mt-1 text-xs truncate ${selectedConvId === conv.id ? "text-slate-300" : "text-slate-500"}`}>
+                          {conv.last_message.body}
+                        </p>
+                      )}
+                    </div>
+                    {unread > 0 && (
+                      <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
+                        {unread}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="md:col-span-7 rounded-3xl border bg-white p-6 shadow-sm flex flex-col h-[500px]">
@@ -740,18 +803,35 @@ export default function AdminPage() {
                   <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl">
                     {chatMessages.map((msg) => {
                       const isMe = msg.sender_id === user.id;
+                      const isRead = msg.is_read || msg.status === "read";
                       return (
                         <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[80%] rounded-2xl p-3 text-xs ${isMe ? "bg-slate-900 text-white" : "bg-white border text-slate-900"}`}>
-                            <p>{msg.body}</p>
-                            <span className="block mt-1 text-[9px] opacity-70">
-                              {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                            </span>
+                            <p className="whitespace-pre-wrap break-words">{msg.body}</p>
+                            <div className="mt-1 flex items-center justify-end gap-1 text-[9px] opacity-80">
+                              <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                              {isMe && (
+                                <span className="font-bold">
+                                  {msg.is_pending ? (
+                                    <span title="Sending (✓)">✓</span>
+                                  ) : isRead ? (
+                                    <span className="text-emerald-400 font-bold" title="Read (✓✓)">
+                                      ✓✓
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-300" title="Delivered (✓✓)">
+                                      ✓✓
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
+
 
                   <form onSubmit={sendAdminReply} className="mt-4 flex gap-2">
                     <input

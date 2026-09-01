@@ -94,8 +94,11 @@ export interface ChatMessage {
   sender_id: string;
   body: string;
   is_read: boolean;
+  status?: "sent" | "delivered" | "read";
+  is_pending?: boolean;
   created_at: string;
 }
+
 
 export interface ConversationResponse {
   id: string;

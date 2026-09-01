@@ -85,7 +85,7 @@ def get_conversation_messages(
     conversation_id: UUID,
     session: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> list[ChatMessage]:
+) -> list[ChatMessageResponse]:
     conversation = session.get(Conversation, conversation_id)
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -94,12 +94,27 @@ def get_conversation_messages(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Mark unread messages from other user as read
+    updated = False
     for msg in conversation.messages:
         if not msg.is_read and msg.sender_id != current_user.id:
             msg.is_read = True
-    session.commit()
+            updated = True
+    if updated:
+        session.commit()
 
-    return sorted(conversation.messages, key=lambda m: m.created_at)
+    sorted_msgs = sorted(conversation.messages, key=lambda m: m.created_at)
+    return [
+        ChatMessageResponse(
+            id=m.id,
+            conversation_id=m.conversation_id,
+            sender_id=m.sender_id,
+            body=m.body,
+            is_read=m.is_read,
+            status="read" if m.is_read else "delivered",
+            created_at=m.created_at,
+        )
+        for m in sorted_msgs
+    ]
 
 
 @router.post("/conversations/{conversation_id}/messages", response_model=ChatMessageResponse, status_code=status.HTTP_201_CREATED)
@@ -108,7 +123,7 @@ def post_chat_message(
     payload: ChatMessageCreateRequest,
     session: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> ChatMessage:
+) -> ChatMessageResponse:
     conversation = session.get(Conversation, conversation_id)
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -125,4 +140,13 @@ def post_chat_message(
     session.add(message)
     session.commit()
     session.refresh(message)
-    return message
+    return ChatMessageResponse(
+        id=message.id,
+        conversation_id=message.conversation_id,
+        sender_id=message.sender_id,
+        body=message.body,
+        is_read=message.is_read,
+        status="delivered",
+        created_at=message.created_at,
+    )
+

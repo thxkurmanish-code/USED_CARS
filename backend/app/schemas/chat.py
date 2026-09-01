@@ -18,7 +18,9 @@ class ChatMessageResponse(BaseModel):
     sender_id: UUID
     body: str
     is_read: bool
+    status: str = "delivered"
     created_at: datetime
+
 
 
 class ConversationResponse(BaseModel):
