@@ -31,18 +31,14 @@ def sanitize_image_storage_keys(session: Session) -> None:
     try:
         broken_imgs = session.scalars(select(CarImage).where(CarImage.storage_key.like("/uploads/%"))).all()
         if broken_imgs:
-            updated = False
             for b_img in broken_imgs:
-                local_path = Path(b_img.storage_key.lstrip("/"))
-                if not local_path.exists():
-                    print(f"[SANITY REPAIR] Migrating lost local image {b_img.id} ({b_img.storage_key}) to permanent cloud URL.")
-                    b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
-                    updated = True
-            if updated:
-                session.commit()
+                print(f"[SANITY REPAIR] Migrating local image {b_img.id} ({b_img.storage_key}) to permanent cloud URL.")
+                b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
+            session.commit()
     except Exception as e:
         session.rollback()
         print(f"[SANITY WARNING] sanitize_image_storage_keys failed: {e}")
+
 
 
 
