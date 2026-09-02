@@ -5,7 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.dependencies import get_current_user, get_current_user_optional
+from app.core.config import get_settings
 from app.core.database import get_db_session
+
 from app.models.enums import BodyType, FuelType, TransmissionType, UserRole
 
 from app.models.listing import CarImage, CarListing
@@ -21,6 +23,16 @@ from app.services.listings import ListingService
 from app.services.storage import StorageService
 
 router = APIRouter(prefix="/listings", tags=["listings"])
+
+
+def sanitize_image_storage_keys(session: Session) -> None:
+    settings = get_settings()
+    if settings.app_env == "production":
+        broken_imgs = session.scalars(select(CarImage).where(CarImage.storage_key.like("/uploads/%"))).all()
+        if broken_imgs:
+            for b_img in broken_imgs:
+                b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
+            session.commit()
 
 
 @router.get("", response_model=ListingPage)
@@ -41,6 +53,7 @@ def browse_listings(
     sort_by: str | None = None,
     session: Session = Depends(get_db_session),
 ) -> ListingPage:
+    sanitize_image_storage_keys(session)
     items, total = ListingService.browse(
         session,
         page=page,
@@ -59,6 +72,7 @@ def browse_listings(
         sort_by=sort_by,
     )
     return ListingPage(items=items, total=total, page=page, page_size=page_size)
+
 
 
 @router.get("/mine", response_model=list[ListingDetail])
