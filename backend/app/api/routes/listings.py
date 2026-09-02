@@ -3,7 +3,8 @@ from uuid import UUID
 
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
-from sqlalchemy import select
+from sqlalchemy import select, update
+
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.dependencies import get_current_user, get_current_user_optional
@@ -29,15 +30,17 @@ router = APIRouter(prefix="/listings", tags=["listings"])
 
 def sanitize_image_storage_keys(session: Session) -> None:
     try:
-        broken_imgs = session.scalars(select(CarImage).where(CarImage.storage_key.like("/uploads/%"))).all()
-        if broken_imgs:
-            for b_img in broken_imgs:
-                print(f"[SANITY REPAIR] Migrating local image {b_img.id} ({b_img.storage_key}) to permanent cloud URL.")
-                b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
-            session.commit()
+        stmt = (
+            update(CarImage)
+            .where(CarImage.storage_key.like("/uploads/%"))
+            .values(storage_key="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80")
+        )
+        session.execute(stmt)
+        session.commit()
     except Exception as e:
         session.rollback()
         print(f"[SANITY WARNING] sanitize_image_storage_keys failed: {e}")
+
 
 
 
