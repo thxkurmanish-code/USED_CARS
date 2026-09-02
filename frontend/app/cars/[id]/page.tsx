@@ -106,6 +106,10 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 <img
                   src={getImageUrl(mainImageKey)}
                   alt={`${car.brand} ${car.model}`}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
+                  }}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -120,7 +124,15 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         selectedImgIdx === idx ? "border-slate-900 ring-2 ring-slate-900/20" : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
-                      <img src={getImageUrl(img.storage_key)} alt="Car thumbnail" className="h-full w-full object-cover" />
+                      <img
+                        src={getImageUrl(img.storage_key)}
+                        alt="Car thumbnail"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
+                        }}
+                        className="h-full w-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -151,13 +163,22 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                           selectedImgIdx === idx ? "ring-2 ring-slate-900" : ""
                         }`}
                       >
-                        <img src={getImageUrl(img.storage_key)} alt={`Photo ${idx + 1}`} className="h-full w-full object-cover" />
+                        <img
+                          src={getImageUrl(img.storage_key)}
+                          alt={`Photo ${idx + 1}`}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
+                          }}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                     ))}
                   </div>
                 </div>
               )
             )}
+
 
             {/* Vehicle Overview */}
             <div className="rounded-3xl border bg-white p-6 shadow-sm">

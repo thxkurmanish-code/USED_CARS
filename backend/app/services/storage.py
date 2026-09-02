@@ -91,8 +91,15 @@ class StorageService:
         settings = get_settings()
         s3_client = StorageService._get_s3_client()
 
-        # If S3 is configured, upload directly to S3 bucket
-        if s3_client and settings.s3_bucket_name:
+        # PRODUCTION S3 ENFORCEMENT
+        if settings.app_env == "production":
+            if not HAS_BOTO3 or not s3_client or not settings.s3_bucket_name:
+                print("[STORAGE ERROR] Cloud storage (S3/R2) is not configured in production.")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Cloud image storage (S3/R2) is not configured in production environment."
+                )
+
             s3_key = f"listings/{listing_id}/{file_id}{ext}"
             try:
                 s3_client.put_object(
@@ -101,16 +108,27 @@ class StorageService:
                     Body=final_contents,
                     ContentType=content_type,
                 )
+
                 if settings.s3_public_custom_domain:
-                    storage_key = f"{settings.s3_public_custom_domain.rstrip('/')}/{s3_key}"
+                    domain = settings.s3_public_custom_domain.rstrip("/")
+                    storage_key = f"{domain}/{s3_key}"
+                    if not storage_key.startswith("http://") and not storage_key.startswith("https://"):
+                        storage_key = f"https://{storage_key}"
+                elif settings.s3_endpoint_url:
+                    endpoint = settings.s3_endpoint_url.rstrip("/")
+                    storage_key = f"{endpoint}/{settings.s3_bucket_name}/{s3_key}"
                 else:
-                    storage_key = f"s3://{settings.s3_bucket_name}/{s3_key}"
+                    storage_key = f"https://{settings.s3_bucket_name}.s3.{settings.s3_region_name}.amazonaws.com/{s3_key}"
+
                 return storage_key, content_type, byte_size, width, height
             except Exception as e:
-                # Log error and fall back to local disk storage
-                print(f"[STORAGE WARNING] S3 Upload failed ({e}), falling back to local storage.")
+                print(f"[STORAGE ERROR] S3 Upload failed: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to upload image to cloud storage: {str(e)}"
+                )
 
-        # Local disk storage fallback
+        # Development local disk fallback
         listing_dir = StorageService.ensure_upload_dir() / str(listing_id)
         listing_dir.mkdir(parents=True, exist_ok=True)
 
@@ -121,6 +139,7 @@ class StorageService:
 
         storage_key = f"/uploads/{listing_id}/{filename}"
         return storage_key, content_type, byte_size, width, height
+
 
     @staticmethod
     def delete_image(storage_key: str) -> None:

@@ -9,8 +9,15 @@ export function getImageUrl(storageKey?: string | null): string {
   if (storageKey.startsWith("http://") || storageKey.startsWith("https://")) {
     return storageKey;
   }
+  if (storageKey.startsWith("s3://")) {
+    const parts = storageKey.replace("s3://", "").split("/");
+    const bucket = parts[0];
+    const key = parts.slice(1).join("/");
+    return `https://${bucket}.s3.amazonaws.com/${key}`;
+  }
   if (storageKey.startsWith("/")) {
     return `${backendBase}${storageKey}`;
   }
   return `${backendBase}/${storageKey}`;
 }
+
