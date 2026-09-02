@@ -2,7 +2,8 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 
 from app.models.enums import BodyType, FuelType, ListingStatus, SellerType, TransmissionType
 
@@ -28,6 +29,9 @@ class ListingCreateRequest(BaseModel):
     seller_type: SellerType = SellerType.INDIVIDUAL
 
 
+from app.core.config import get_settings
+
+
 class ListingUpdateRequest(ListingCreateRequest):
     pass
 
@@ -42,6 +46,16 @@ class CarImageResponse(BaseModel):
     byte_size: int
     sort_order: int
     is_primary: bool
+
+    @field_validator("storage_key", mode="before")
+    @classmethod
+    def sanitize_storage_key(cls, value: str) -> str:
+        if isinstance(value, str) and value.startswith("/uploads/"):
+            settings = get_settings()
+            if settings.app_env == "production":
+                return "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
+        return value
+
 
 
 class ListingSummary(BaseModel):

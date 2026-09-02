@@ -35,11 +35,14 @@ def sanitize_image_storage_keys(session: Session) -> None:
             .where(CarImage.storage_key.like("/uploads/%"))
             .values(storage_key="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80")
         )
-        session.execute(stmt)
-        session.commit()
+        res = session.execute(stmt)
+        if res.rowcount and res.rowcount > 0:
+            session.commit()
+            session.expire_all()
     except Exception as e:
         session.rollback()
         print(f"[SANITY WARNING] sanitize_image_storage_keys failed: {e}")
+
 
 
 
