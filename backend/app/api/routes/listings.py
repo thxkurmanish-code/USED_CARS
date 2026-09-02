@@ -26,13 +26,18 @@ router = APIRouter(prefix="/listings", tags=["listings"])
 
 
 def sanitize_image_storage_keys(session: Session) -> None:
-    settings = get_settings()
-    if settings.app_env == "production":
-        broken_imgs = session.scalars(select(CarImage).where(CarImage.storage_key.like("/uploads/%"))).all()
-        if broken_imgs:
-            for b_img in broken_imgs:
-                b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
-            session.commit()
+    try:
+        settings = get_settings()
+        if settings.app_env == "production":
+            broken_imgs = session.scalars(select(CarImage).where(CarImage.storage_key.like("/uploads/%"))).all()
+            if broken_imgs:
+                for b_img in broken_imgs:
+                    b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
+                session.commit()
+    except Exception as e:
+        session.rollback()
+        print(f"[SANITY WARNING] sanitize_image_storage_keys failed: {e}")
+
 
 
 @router.get("", response_model=ListingPage)
