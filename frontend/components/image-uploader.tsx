@@ -87,11 +87,24 @@ export function ImageUploader({ listingId, images, onImagesUpdated }: ImageUploa
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {images.map((img, idx) => (
             <div key={img.id} className="group relative overflow-hidden rounded-xl border bg-slate-100 aspect-video">
-              <img
-                src={getImageUrl(img.storage_key)}
-                alt={`Car photo ${idx + 1}`}
-                className="h-full w-full object-cover"
-              />
+              {(() => {
+                const imgUrl = getImageUrl(img.storage_key);
+                return imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={`Car photo ${idx + 1}`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                    }}
+                    className="h-full w-full object-cover"
+                  />
+                ) : null;
+              })()}
+              <div className={`no-img-placeholder absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-semibold ${getImageUrl(img.storage_key) ? "hidden" : ""}`}>
+                No image
+              </div>
               {img.is_primary && (
                 <span className="absolute left-2 top-2 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">
                   Cover Photo

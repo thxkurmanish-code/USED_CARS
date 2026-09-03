@@ -89,8 +89,25 @@ export default function WishlistPage() {
               return (
                 <div key={car.id} className="group flex flex-col overflow-hidden rounded-3xl border bg-white shadow-sm">
                   <div className="relative aspect-[16/10] bg-slate-100">
-                    <img src={getImageUrl(coverImg)} alt={car.model} className="h-full w-full object-cover" />
-                    <div className="absolute top-3 left-3">
+                    {(() => {
+                      const imgUrl = getImageUrl(coverImg);
+                      return imgUrl ? (
+                        <img
+                          src={imgUrl}
+                          alt={car.model}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                          }}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : null;
+                    })()}
+                    <div className={`no-img-placeholder absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-semibold ${getImageUrl(coverImg) ? "hidden" : ""}`}>
+                      No image available
+                    </div>
+                    <div className="absolute top-3 left-3 z-10">
                       <TrustBadge isVerified={car.is_verified} sellerType={car.seller_type} />
                     </div>
                     <button

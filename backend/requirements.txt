@@ -1,6 +1,8 @@
 alembic>=1.15.1
+boto3>=1.35.0
 email-validator>=2.2.0
 fastapi>=0.115.11
+Pillow>=11.0.0
 psycopg[binary]>=3.2.6
 python-multipart>=0.0.20
 PyJWT>=2.10.1

@@ -482,8 +482,25 @@ export default function AdminPage() {
                   return (
                     <div key={car.id} className="rounded-3xl border bg-white p-6 shadow-sm flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-100 border">
-                          <img src={getImageUrl(coverImg)} alt={car.model} className="h-full w-full object-cover" />
+                        <div className="relative h-20 w-32 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-100 border">
+                          {(() => {
+                            const imgUrl = getImageUrl(coverImg);
+                            return imgUrl ? (
+                              <img
+                                src={imgUrl}
+                                alt={car.model}
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.style.display = "none";
+                                  e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                                }}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : null;
+                          })()}
+                          <div className={`no-img-placeholder absolute inset-0 flex items-center justify-center text-slate-400 text-[10px] font-semibold ${getImageUrl(coverImg) ? "hidden" : ""}`}>
+                            No image
+                          </div>
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -571,7 +588,24 @@ export default function AdminPage() {
                   return (
                     <div key={car.id} className="overflow-hidden rounded-3xl border bg-white shadow-sm grid lg:grid-cols-12">
                       <div className="relative aspect-[16/10] bg-slate-100 lg:col-span-4">
-                        <img src={getImageUrl(coverImg)} alt={car.model} className="h-full w-full object-cover" />
+                        {(() => {
+                          const imgUrl = getImageUrl(coverImg);
+                          return imgUrl ? (
+                            <img
+                              src={imgUrl}
+                              alt={car.model}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.style.display = "none";
+                                e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                              }}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : null;
+                        })()}
+                        <div className={`no-img-placeholder absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-semibold ${getImageUrl(coverImg) ? "hidden" : ""}`}>
+                          No image available
+                        </div>
                       </div>
 
                       <div className="flex flex-col justify-between p-6 lg:col-span-8">

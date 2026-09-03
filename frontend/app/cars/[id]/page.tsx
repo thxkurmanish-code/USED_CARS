@@ -103,15 +103,25 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
             {/* Main Photo Viewer */}
             <div className="overflow-hidden rounded-3xl border bg-slate-100 shadow-sm">
               <div className="relative aspect-[16/10] w-full bg-slate-900">
-                <img
-                  src={getImageUrl(mainImageKey)}
-                  alt={`${car.brand} ${car.model}`}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
-                  }}
-                  className="h-full w-full object-cover"
-                />
+                {(() => {
+                  const imgUrl = getImageUrl(mainImageKey);
+                  return imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={`${car.brand} ${car.model}`}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                      }}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null;
+                })()}
+                <div className={`no-img-placeholder absolute inset-0 flex flex-col items-center justify-center text-slate-500 ${getImageUrl(mainImageKey) ? "hidden" : ""}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-2 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="text-sm font-semibold">No image available</span>
+                </div>
               </div>
 
               {images.length > 1 && (
@@ -124,15 +134,22 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         selectedImgIdx === idx ? "border-slate-900 ring-2 ring-slate-900/20" : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
-                      <img
-                        src={getImageUrl(img.storage_key)}
-                        alt="Car thumbnail"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
-                        }}
-                        className="h-full w-full object-cover"
-                      />
+                      {(() => {
+                        const thumbUrl = getImageUrl(img.storage_key);
+                        return thumbUrl ? (
+                          <img
+                            src={thumbUrl}
+                            alt="Car thumbnail"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.style.opacity = "0.3";
+                            }}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-[8px] font-bold">No img</div>
+                        );
+                      })()}
                     </button>
                   ))}
                 </div>
@@ -163,15 +180,22 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                           selectedImgIdx === idx ? "ring-2 ring-slate-900" : ""
                         }`}
                       >
-                        <img
-                          src={getImageUrl(img.storage_key)}
-                          alt={`Photo ${idx + 1}`}
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
-                          }}
-                          className="h-full w-full object-cover"
-                        />
+                        {(() => {
+                          const galleryUrl = getImageUrl(img.storage_key);
+                          return galleryUrl ? (
+                            <img
+                              src={galleryUrl}
+                              alt={`Photo ${idx + 1}`}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.style.opacity = "0.3";
+                              }}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs font-bold">No image</div>
+                          );
+                        })()}
                       </div>
                     ))}
                   </div>

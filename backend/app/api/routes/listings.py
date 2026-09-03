@@ -1,18 +1,12 @@
-from pathlib import Path
 from uuid import UUID
 
-
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
-from sqlalchemy import select, update
-
+from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.dependencies import get_current_user, get_current_user_optional
-from app.core.config import get_settings
 from app.core.database import get_db_session
-
 from app.models.enums import BodyType, FuelType, TransmissionType, UserRole
-
 from app.models.listing import CarImage, CarListing
 from app.models.user import User
 from app.schemas.listing import (
@@ -26,27 +20,6 @@ from app.services.listings import ListingService
 from app.services.storage import StorageService
 
 router = APIRouter(prefix="/listings", tags=["listings"])
-
-
-def sanitize_image_storage_keys(session: Session) -> None:
-    try:
-        stmt = (
-            update(CarImage)
-            .where(CarImage.storage_key.like("/uploads/%"))
-            .values(storage_key="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80")
-        )
-        res = session.execute(stmt)
-        if res.rowcount and res.rowcount > 0:
-            session.commit()
-            session.expire_all()
-    except Exception as e:
-        session.rollback()
-        print(f"[SANITY WARNING] sanitize_image_storage_keys failed: {e}")
-
-
-
-
-
 
 
 @router.get("", response_model=ListingPage)
@@ -67,7 +40,6 @@ def browse_listings(
     sort_by: str | None = None,
     session: Session = Depends(get_db_session),
 ) -> ListingPage:
-    sanitize_image_storage_keys(session)
     items, total = ListingService.browse(
         session,
         page=page,

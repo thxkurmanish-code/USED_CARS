@@ -200,15 +200,26 @@ export default function CarsPage() {
                   <Link href={`/cars/${car.id}`} className="group flex flex-col flex-1">
                     {/* Photo Container */}
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-                      <img
-                        src={getImageUrl(coverImg)}
-                        alt={`${car.brand} ${car.model}`}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80";
-                        }}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {(() => {
+                        const imgUrl = getImageUrl(coverImg);
+                        return imgUrl ? (
+                          <img
+                            src={imgUrl}
+                            alt={`${car.brand} ${car.model}`}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.style.display = "none";
+                              e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
+                            }}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : null;
+                      })()}
+                      <div className={`no-img-placeholder absolute inset-0 flex flex-col items-center justify-center text-slate-400 ${getImageUrl(coverImg) ? "hidden" : ""}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-1 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="text-[10px] font-semibold">No image available</span>
+                      </div>
+
 
                       <div className="absolute top-3 left-3">
                         <TrustBadge isVerified={car.is_verified} sellerType={car.seller_type} />

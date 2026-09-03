@@ -31,14 +31,6 @@ def seed_database():
 
     session: Session = SessionLocal()
     try:
-        # Migrate/repair any legacy local disk image paths (/uploads/...) in PostgreSQL database to permanent URLs
-        broken_imgs = session.query(CarImage).filter(CarImage.storage_key.like("/uploads/%")).all()
-        if broken_imgs:
-            for b_img in broken_imgs:
-                print(f"[REPAIR] Migrating legacy local image {b_img.id} ({b_img.storage_key}) to permanent cloud URL.")
-                b_img.storage_key = "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80"
-            session.commit()
-
         if settings.app_env == "production":
             print("[SEED] Production environment detected.")
             prod_email = settings.production_admin_email.lower().strip()
