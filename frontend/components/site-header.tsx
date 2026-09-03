@@ -13,7 +13,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur sm:px-10">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-5">
-        <Link href="/">
+        <Link href="/" className="shrink-0">
           <BrandMark />
         </Link>
 
