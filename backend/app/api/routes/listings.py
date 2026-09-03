@@ -209,13 +209,13 @@ def mark_listing_sold(
 
 
 @router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
-def archive_listing(
+def delete_listing(
     listing_id: UUID,
     session: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> Response:
     listing = ListingService.get_owned(session, listing_id, current_user)
-    ListingService.archive(session, listing, current_user)
+    ListingService.delete(session, listing, current_user)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

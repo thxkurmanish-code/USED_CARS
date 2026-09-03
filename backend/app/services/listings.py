@@ -76,6 +76,37 @@ class ListingService:
         session.add(ListingStatusEvent(listing_id=listing.id, actor_id=actor.id, previous_status=listing.status, new_status=listing.status, reason="Archived by owner"))
 
     @staticmethod
+    def delete(session: Session, listing: CarListing, actor: User) -> None:
+        from app.models.engagement import Enquiry, ListingReport, WishlistItem
+        from app.models.listing import CarImage
+        from app.models.test_drive import TestDrive
+        from app.services.storage import StorageService
+        from sqlalchemy import delete
+
+        # 1. Collect all images for the vehicle
+        images = list(listing.images)
+
+        # 2. Delete each image asset from Cloudinary (using invalidate=True) / storage
+        for img in images:
+            try:
+                StorageService.delete_image(img.storage_key, public_id=img.public_id)
+            except Exception as e:
+                print(f"[STORAGE ERROR] Failed deleting image {img.id} (public_id: {img.public_id}): {e}")
+
+        # 3. Clean up related database records
+        session.execute(delete(WishlistItem).where(WishlistItem.listing_id == listing.id))
+        session.execute(delete(Enquiry).where(Enquiry.listing_id == listing.id))
+        session.execute(delete(ListingReport).where(ListingReport.listing_id == listing.id))
+        session.execute(delete(TestDrive).where(TestDrive.listing_id == listing.id))
+        session.execute(delete(ListingStatusEvent).where(ListingStatusEvent.listing_id == listing.id))
+        session.execute(delete(CarImage).where(CarImage.listing_id == listing.id))
+        session.flush()
+
+        # 4. Delete the car record from PostgreSQL
+        session.delete(listing)
+        session.flush()
+
+    @staticmethod
     def browse(
         session: Session,
         *,

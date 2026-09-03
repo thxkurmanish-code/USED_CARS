@@ -221,10 +221,24 @@ class StorageService:
 
             if pid:
                 try:
-                    cloudinary.uploader.destroy(pid)
+                    res = cloudinary.uploader.destroy(pid, invalidate=True)
+                    print(f"[STORAGE DEBUG] Cloudinary destroy result for '{pid}': {res}")
+                    if res and isinstance(res, dict) and res.get("result") not in ("ok", "not_found"):
+                        err_msg = f"Cloudinary destroy returned status '{res.get('result')}' for public_id '{pid}'"
+                        print(f"[STORAGE ERROR] {err_msg}")
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=err_msg,
+                        )
                     return
+                except HTTPException:
+                    raise
                 except Exception as e:
-                    print(f"[STORAGE WARNING] Cloudinary destroy failed for {pid}: {e}")
+                    print(f"[STORAGE ERROR] Cloudinary destroy failed for public_id '{pid}': {e}")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Cloudinary image deletion failed for {pid}: {str(e)}",
+                    )
 
         # 2. S3 Delete Fallback
         s3_client = StorageService._get_s3_client()
@@ -233,8 +247,8 @@ class StorageService:
                 s3_key = storage_key.split("listings/")[-1]
                 s3_client.delete_object(Bucket=settings.s3_bucket_name, Key=f"listings/{s3_key}")
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[STORAGE ERROR] S3 deletion failed for {storage_key}: {e}")
 
         # 3. Local File Delete
         if storage_key.startswith("/uploads/"):
@@ -243,5 +257,5 @@ class StorageService:
             if file_path.exists():
                 try:
                     file_path.unlink()
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"[STORAGE ERROR] Local file deletion failed for {storage_key}: {e}")
