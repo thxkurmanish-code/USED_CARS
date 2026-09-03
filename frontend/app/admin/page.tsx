@@ -312,6 +312,21 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDeleteConversation(convId: string) {
+    if (!confirm("Are you sure you want to remove this chat conversation thread?")) return;
+    try {
+      await apiClient(`/chat/conversations/${convId}`, { method: "DELETE" });
+      if (selectedConvId === convId) {
+        setSelectedConvId(null);
+        setChatMessages([]);
+      }
+      const updatedConvs = await apiClient<ConversationResponse[]>("/chat/conversations");
+      setConversations(updatedConvs);
+    } catch {
+      alert("Failed to remove conversation.");
+    }
+  }
+
   async function sendAdminReply(e: FormEvent) {
     e.preventDefault();
     if (!selectedConvId || !replyInput.trim() || !user) return;
@@ -847,11 +862,21 @@ export default function AdminPage() {
                                   👤 {selectedConv.customer?.display_name || "Customer"}
                                 </h4>
                               </div>
-                              {selectedConv.listing && (
-                                <span className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
-                                  🚗 {selectedConv.listing.manufacturing_year} {selectedConv.listing.brand} {selectedConv.listing.model}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {selectedConv.listing && (
+                                  <span className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
+                                    🚗 {selectedConv.listing.manufacturing_year} {selectedConv.listing.brand} {selectedConv.listing.model}
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDeleteConversation(selectedConv.id)}
+                                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20 transition"
+                                  title="Remove Conversation"
+                                >
+                                  🗑 Remove Thread
+                                </button>
+                              </div>
                             </div>
 
                             <div className="mt-2.5 grid gap-2 text-xs text-slate-300 sm:grid-cols-2">

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
@@ -195,4 +195,25 @@ def post_chat_message(
         status="delivered",
         created_at=message.created_at,
     )
+
+
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_conversation(
+    conversation_id: UUID,
+    session: Session = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> Response:
+    conversation = session.get(Conversation, conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    if current_user.role != UserRole.ADMIN and conversation.customer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    for msg in conversation.messages:
+        session.delete(msg)
+    session.delete(conversation)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 

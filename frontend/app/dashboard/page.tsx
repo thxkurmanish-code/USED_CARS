@@ -108,6 +108,16 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleDeleteConversation(convId: string) {
+    if (!confirm("Are you sure you want to remove this chat conversation thread?")) return;
+    try {
+      await apiClient(`/chat/conversations/${convId}`, { method: "DELETE" });
+      setConversations((prev) => prev.filter((c) => c.id !== convId));
+    } catch {
+      alert("Failed to remove conversation.");
+    }
+  }
+
 
   if (authLoading || loading) {
     return (
@@ -373,11 +383,20 @@ export default function DashboardPage() {
                       </p>
                     </div>
 
-                    {conv.listing_id && (
-                      <Link href={`/cars/${conv.listing_id}`} className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800">
-                        Open Car Chat →
-                      </Link>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {conv.listing_id && (
+                        <Link href={`/cars/${conv.listing_id}`} className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800">
+                          Open Car Chat →
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => void handleDeleteConversation(conv.id)}
+                        className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-100"
+                        title="Remove Conversation"
+                      >
+                        🗑 Remove
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
