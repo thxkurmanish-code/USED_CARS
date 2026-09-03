@@ -65,6 +65,7 @@ export default function AdminPage() {
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("02:00 PM");
   const [tdNote, setTdNote] = useState("");
+  const [activeTdMenuId, setActiveTdMenuId] = useState<string | null>(null);
 
   // Active chat state
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
@@ -297,6 +298,17 @@ export default function AdminPage() {
       await loadAdminData();
     } catch {
       alert("Failed to update test drive status.");
+    }
+  }
+
+  async function handleDeleteTestDrive(tdId: string) {
+    if (!confirm("Are you sure you want to remove this test drive request?")) return;
+    try {
+      await apiClient(`/admin/test-drives/${tdId}`, { method: "DELETE" });
+      setTestDrives((prev) => prev.filter((td) => td.id !== tdId));
+      setActiveTdMenuId(null);
+    } catch {
+      alert("Failed to remove test drive request.");
     }
   }
 
@@ -720,8 +732,31 @@ export default function AdminPage() {
             ) : (
               <div className="space-y-4">
                 {testDrives.map((td) => (
-                  <div key={td.id} className="rounded-3xl border bg-white p-6 shadow-sm">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div key={td.id} className="relative rounded-3xl border bg-white p-6 shadow-sm">
+                    {/* Rightmost Three-Dots Menu */}
+                    <div className="absolute right-4 top-4 z-10">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTdMenuId(activeTdMenuId === td.id ? null : td.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition font-bold text-lg"
+                        title="Options"
+                      >
+                        ⋮
+                      </button>
+                      {activeTdMenuId === td.id && (
+                        <div className="absolute right-0 top-10 z-20 w-36 rounded-2xl border bg-white p-1.5 shadow-xl">
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteTestDrive(td.id)}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold text-red-600 hover:bg-red-50 transition"
+                          >
+                            🗑 Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pr-8">
                       <div>
                         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase text-amber-800">
                           {td.status}
@@ -851,7 +886,7 @@ export default function AdminPage() {
                         }`}
                         title="Remove Conversation"
                       >
-                        🗑 Delete
+                        🗑 Remove
                       </button>
                     </div>
                   </div>
@@ -891,7 +926,7 @@ export default function AdminPage() {
                                   className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20 transition"
                                   title="Remove Conversation"
                                 >
-                                  🗑 Remove Thread
+                                  🗑 Remove
                                 </button>
                               </div>
                             </div>

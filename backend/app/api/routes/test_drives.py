@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
@@ -96,3 +96,19 @@ def update_test_drive_status(
     session.commit()
     session.refresh(test_drive)
     return test_drive
+
+
+@router.delete("/admin/test-drives/{test_drive_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_test_drive(
+    test_drive_id: UUID,
+    session: Session = Depends(get_db_session),
+    admin: User = Depends(admin_required),
+) -> Response:
+    test_drive = session.get(TestDrive, test_drive_id)
+    if test_drive is None:
+        raise HTTPException(status_code=404, detail="Test drive request not found")
+
+    session.delete(test_drive)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
