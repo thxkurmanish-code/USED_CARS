@@ -737,27 +737,27 @@ export default function AdminPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {td.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() => handleUpdateTdStatus(td.id, "approved", "Confirmed. See you at showroom.")}
-                              className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"
-                            >
-                              ✓ Approve Appointment
-                            </button>
-                            <button
-                              onClick={() => setReschedulingTdId(td.id)}
-                              className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700"
-                            >
-                              Reschedule
-                            </button>
-                            <button
-                              onClick={() => handleUpdateTdStatus(td.id, "rejected", "Slot unavailable.")}
-                              className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700"
-                            >
-                              Reject
-                            </button>
-                          </>
+                        {td.status !== "approved" && (
+                          <button
+                            onClick={() => handleUpdateTdStatus(td.id, "approved", "Confirmed. See you at showroom.")}
+                            className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 shadow-sm"
+                          >
+                            ✓ Approve Appointment
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setReschedulingTdId(td.id)}
+                          className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 shadow-sm"
+                        >
+                          Reschedule
+                        </button>
+                        {td.status !== "rejected" && (
+                          <button
+                            onClick={() => handleUpdateTdStatus(td.id, "rejected", "Slot unavailable.")}
+                            className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 shadow-sm"
+                          >
+                            Reject
+                          </button>
                         )}
                       </div>
                     </div>
@@ -832,11 +832,28 @@ export default function AdminPage() {
                         </p>
                       )}
                     </div>
-                    {unread > 0 && (
-                      <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
-                        {unread}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {unread > 0 && (
+                        <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
+                          {unread}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleDeleteConversation(conv.id);
+                        }}
+                        className={`rounded-lg px-2 py-1 text-xs font-bold transition ${
+                          selectedConvId === conv.id
+                            ? "bg-red-500/20 text-red-300 hover:bg-red-500/40"
+                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                        }`}
+                        title="Remove Conversation"
+                      >
+                        🗑 Delete
+                      </button>
+                    </div>
                   </div>
                 );
               })}
