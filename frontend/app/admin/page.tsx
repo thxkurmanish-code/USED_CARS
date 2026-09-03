@@ -732,23 +732,37 @@ export default function AdminPage() {
             ) : (
               <div className="space-y-4">
                 {testDrives.map((td) => (
-                  <div key={td.id} className="relative rounded-3xl border bg-white p-6 shadow-sm">
+                  <div key={td.id} className="relative rounded-3xl border bg-white p-4 sm:p-6 shadow-sm">
+                    {/* Backdrop listener to close menu on click/tap outside */}
+                    {activeTdMenuId === td.id && (
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setActiveTdMenuId(null)}
+                      />
+                    )}
+
                     {/* Rightmost Three-Dots Menu */}
-                    <div className="absolute right-4 top-4 z-10">
+                    <div className="absolute right-3 top-3 sm:right-4 sm:top-4 z-20">
                       <button
                         type="button"
-                        onClick={() => setActiveTdMenuId(activeTdMenuId === td.id ? null : td.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition font-bold text-lg"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveTdMenuId(activeTdMenuId === td.id ? null : td.id);
+                        }}
+                        className="flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 transition font-bold text-xl sm:text-lg"
                         title="Options"
                       >
                         ⋮
                       </button>
                       {activeTdMenuId === td.id && (
-                        <div className="absolute right-0 top-10 z-20 w-36 rounded-2xl border bg-white p-1.5 shadow-xl">
+                        <div className="absolute right-0 top-11 z-30 w-36 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl">
                           <button
                             type="button"
-                            onClick={() => void handleDeleteTestDrive(td.id)}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold text-red-600 hover:bg-red-50 transition"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDeleteTestDrive(td.id);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 sm:py-2 text-left text-xs font-bold text-red-600 hover:bg-red-50 active:bg-red-100 transition min-h-[40px] sm:min-h-0"
                           >
                             🗑 Remove
                           </button>
@@ -756,7 +770,7 @@ export default function AdminPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pr-8">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pr-10 sm:pr-12">
                       <div>
                         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase text-amber-800">
                           {td.status}
@@ -914,7 +928,7 @@ export default function AdminPage() {
                                   👤 {selectedConv.customer?.display_name || "Customer"}
                                 </h4>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 {selectedConv.listing && (
                                   <span className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
                                     🚗 {selectedConv.listing.manufacturing_year} {selectedConv.listing.brand} {selectedConv.listing.model}

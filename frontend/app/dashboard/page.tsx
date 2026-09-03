@@ -367,7 +367,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {conversations.map((conv) => (
-                  <div key={conv.id} className="rounded-3xl border bg-white p-6 shadow-sm flex items-center justify-between">
+                  <div key={conv.id} className="rounded-3xl border bg-white p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="font-bold text-slate-900">
                         {conv.listing ? `${conv.listing.brand} ${conv.listing.model}` : "Car Inquiry"}
