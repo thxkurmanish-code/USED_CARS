@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3000"
     access_token_expire_minutes: int = 30
 
+    # Cloudinary Object Storage Configuration
+    cloudinary_cloud_name: str | None = None
+    cloudinary_api_key: str | None = None
+    cloudinary_api_secret: str | None = None
+
     # S3 Object Storage Configuration
     s3_bucket_name: str | None = None
     s3_endpoint_url: str | None = None

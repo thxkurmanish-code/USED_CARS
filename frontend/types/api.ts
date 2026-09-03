@@ -14,6 +14,7 @@ export interface User {
 export interface CarImage {
   id: string;
   storage_key: string;
+  public_id?: string | null;
   original_filename: string;
   content_type: string;
   byte_size: number;

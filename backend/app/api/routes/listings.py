@@ -128,11 +128,12 @@ def upload_listing_images(
 
     saved_images = []
     for idx, file in enumerate(files):
-        storage_key, content_type, byte_size, width, height = StorageService.save_image(file, listing_id)
+        storage_key, public_id, content_type, byte_size, width, height = StorageService.save_image(file, listing_id)
         is_primary = (existing_count == 0 and idx == 0)
         image = CarImage(
             listing_id=listing.id,
             storage_key=storage_key,
+            public_id=public_id,
             original_filename=file.filename or "image.jpg",
             content_type=content_type,
             byte_size=byte_size,
@@ -163,7 +164,7 @@ def delete_listing_image(
         raise HTTPException(status_code=404, detail="Image not found")
 
     was_primary = image.is_primary
-    StorageService.delete_image(image.storage_key)
+    StorageService.delete_image(image.storage_key, public_id=image.public_id)
     session.delete(image)
     session.flush()
 

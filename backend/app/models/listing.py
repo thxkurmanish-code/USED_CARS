@@ -115,6 +115,7 @@ class CarImage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         ForeignKey("car_listings.id", ondelete="CASCADE"), nullable=False
     )
     storage_key: Mapped[str] = mapped_column(String(1_024), unique=True, nullable=False)
+    public_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
     byte_size: Mapped[int] = mapped_column(Integer, nullable=False)

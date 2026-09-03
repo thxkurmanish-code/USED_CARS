@@ -25,12 +25,23 @@ SAMPLE_CAR_IMAGES = [
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
 ]
 
+from sqlalchemy import text
+
 def seed_database():
     settings = get_settings()
     Base.metadata.create_all(bind=engine)
 
     session: Session = SessionLocal()
     try:
+        try:
+            if engine.dialect.name == "sqlite":
+                session.execute(text("ALTER TABLE car_images ADD COLUMN public_id VARCHAR(255);"))
+            else:
+                session.execute(text("ALTER TABLE car_images ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);"))
+            session.commit()
+        except Exception:
+            session.rollback()
+
         if settings.app_env == "production":
             print("[SEED] Production environment detected.")
             prod_email = settings.production_admin_email.lower().strip()

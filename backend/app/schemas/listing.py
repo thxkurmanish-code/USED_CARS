@@ -39,6 +39,7 @@ class CarImageResponse(BaseModel):
 
     id: UUID
     storage_key: str
+    public_id: str | None = None
     original_filename: str
     content_type: str
     byte_size: int
