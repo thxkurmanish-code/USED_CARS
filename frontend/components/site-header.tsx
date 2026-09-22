@@ -13,9 +13,9 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-8">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-        {/* Top-Left Brand Logo */}
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        {/* Top-Left Brand Logo - Perfect alignment with page container */}
         <Link href="/" onClick={() => setMobileMenuOpen(false)} className="shrink-0">
           <BrandMark />
         </Link>
@@ -90,93 +90,102 @@ export function SiteHeader() {
         </button>
       </nav>
 
-      {/* Mobile Slide-Down Dropdown Menu Drawer */}
+      {/* Mobile Backdrop & Slide-Down Opaque Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 z-50 border-b border-slate-200 bg-white/98 p-5 shadow-2xl backdrop-blur animate-in slide-in-from-top-2 duration-200">
-          <div className="flex flex-col gap-3 text-sm font-semibold text-slate-700">
-            <Link
-              href="/cars"
-              onClick={() => setMobileMenuOpen(false)}
-              className="rounded-xl p-2.5 hover:bg-slate-100 active:bg-slate-200 transition"
-            >
-              🚗 Browse Cars
-            </Link>
-            <Link
-              href="/sell"
-              onClick={() => setMobileMenuOpen(false)}
-              className="rounded-xl p-2.5 hover:bg-slate-100 active:bg-slate-200 transition"
-            >
-              ➕ Sell Your Car
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className="rounded-xl p-2.5 hover:bg-slate-100 active:bg-slate-200 transition"
-            >
-              📞 Contact Us
-            </Link>
+        <>
+          {/* Backdrop overlay behind menu */}
+          <div
+            className="md:hidden fixed inset-0 top-[65px] z-40 bg-slate-900/50 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-            <div className="my-1 border-t border-slate-100 pt-3">
-              {!loading &&
-                (user ? (
-                  <div className="flex flex-col gap-2">
-                    {user.role === "admin" ? (
-                      <>
-                        <Link
-                          href="/admin"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-2 rounded-xl bg-slate-900 p-3 text-xs font-bold text-white shadow"
-                        >
-                          🔒 Admin Business Console
-                        </Link>
+          {/* Opaque 100% Solid Mobile Dropdown Drawer */}
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 border-b border-slate-200 bg-white p-5 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col gap-2.5 text-sm font-semibold text-slate-800">
+              <Link
+                href="/cars"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 hover:bg-slate-100 active:bg-slate-200 transition"
+              >
+                <span className="text-base">🚗</span> Browse Cars
+              </Link>
+              <Link
+                href="/sell"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 hover:bg-slate-100 active:bg-slate-200 transition"
+              >
+                <span className="text-base">➕</span> Sell Your Car
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 hover:bg-slate-100 active:bg-slate-200 transition"
+              >
+                <span className="text-base">📞</span> Contact Us
+              </Link>
+
+              <div className="my-1 border-t border-slate-100 pt-3">
+                {!loading &&
+                  (user ? (
+                    <div className="flex flex-col gap-2">
+                      {user.role === "admin" ? (
+                        <>
+                          <Link
+                            href="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 rounded-xl bg-slate-900 p-3 text-xs font-bold text-white shadow"
+                          >
+                            🔒 Admin Business Console
+                          </Link>
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="rounded-xl p-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                          >
+                            My Customer Profile
+                          </Link>
+                        </>
+                      ) : (
                         <Link
                           href="/dashboard"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="rounded-xl p-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                          className="rounded-xl bg-slate-900 p-3 text-xs font-bold text-white text-center shadow"
                         >
-                          My Customer Profile
+                          My Dashboard
                         </Link>
-                      </>
-                    ) : (
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="rounded-xl bg-slate-900 p-3 text-xs font-bold text-white text-center shadow"
+                      )}
+                      <button
+                        className="w-full rounded-xl border border-slate-300 p-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 text-center"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          void logout().then(() => router.push("/"));
+                        }}
                       >
-                        My Dashboard
+                        Logout
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="rounded-xl border border-slate-300 p-2.5 text-center text-xs font-bold text-slate-700 hover:bg-slate-100"
+                      >
+                        Register
                       </Link>
-                    )}
-                    <button
-                      className="w-full rounded-xl border border-slate-300 p-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 text-center"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        void logout().then(() => router.push("/"));
-                      }}
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="rounded-xl border border-slate-300 p-2.5 text-center text-xs font-bold text-slate-700 hover:bg-slate-100"
-                    >
-                      Register
-                    </Link>
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="rounded-xl bg-slate-900 p-2.5 text-center text-xs font-bold text-white hover:bg-slate-800 shadow"
-                    >
-                      Sign In
-                    </Link>
-                  </div>
-                ))}
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="rounded-xl bg-slate-900 p-2.5 text-center text-xs font-bold text-white hover:bg-slate-800 shadow"
+                      >
+                        Sign In
+                      </Link>
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );
