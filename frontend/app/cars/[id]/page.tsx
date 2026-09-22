@@ -266,7 +266,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
           {/* Right Column: Pricing & Buyer Actions Card */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="sticky top-6 rounded-3xl border bg-white p-6 shadow-lg space-y-6">
+            <div className="lg:sticky lg:top-20 rounded-3xl border bg-white p-6 shadow-lg space-y-6">
               <div>
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{car.brand}</span>
                 <h1 className="text-2xl font-extrabold text-slate-900">{car.brand} {car.model}</h1>

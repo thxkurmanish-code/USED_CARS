@@ -8,12 +8,16 @@
   --font-display: "Arial Black", Arial, Helvetica, sans-serif;
 }
 
-* {
+*, ::before, ::after {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   background: #f8fafc;
   color: #111827;
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
