@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { TrustBadge } from "@/components/trust-badge";
@@ -21,6 +21,40 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImgIdx, setSelectedImgIdx] = useState(0);
+
+  // Thumbnail scroll state & ref
+  const thumbnailScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollState = useCallback(() => {
+    const el = thumbnailScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 5);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+  }, []);
+
+  useEffect(() => {
+    const el = thumbnailScrollRef.current;
+    if (!el) return;
+    checkScrollState();
+    el.addEventListener("scroll", checkScrollState);
+    window.addEventListener("resize", checkScrollState);
+    return () => {
+      el.removeEventListener("scroll", checkScrollState);
+      window.removeEventListener("resize", checkScrollState);
+    };
+  }, [checkScrollState, car]);
+
+  const scrollThumbnails = (direction: "left" | "right") => {
+    const el = thumbnailScrollRef.current;
+    if (!el) return;
+    const scrollAmount = el.clientWidth * 0.75;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   // Modals & drawers state
   const [isTestDriveOpen, setIsTestDriveOpen] = useState(false);
@@ -102,7 +136,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
           <div className="lg:col-span-8 space-y-8">
             {/* Main Photo Viewer & Single Horizontal Thumbnail Carousel */}
             <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-              <div className="relative w-full h-auto sm:aspect-[16/9] bg-slate-950 flex items-center justify-center overflow-hidden">
+              <div className="relative w-full h-auto lg:aspect-[16/9] bg-slate-950 flex items-center justify-center overflow-hidden vehicle-main-image-frame">
                 {(() => {
                   const imgUrl = getImageUrl(mainImageKey);
                   return imgUrl ? (
@@ -114,7 +148,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                       }}
-                      className="block w-full h-auto sm:h-full sm:w-full object-contain"
+                      className="block w-full h-auto lg:h-full lg:w-full object-contain vehicle-main-image"
                     />
                   ) : null;
                 })()}
@@ -124,38 +158,67 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               </div>
 
-              {/* Single Horizontal Scrollable Thumbnail Carousel */}
+              {/* Single Horizontal Scrollable Thumbnail Carousel with Left / Right Scroll Arrows */}
               {images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto flex-nowrap p-3 bg-white border-t select-none">
-                  {images.map((img, idx) => (
+                <div className="relative group border-t bg-white">
+                  {canScrollLeft && (
                     <button
-                      key={img.id}
                       type="button"
-                      onClick={() => setSelectedImgIdx(idx)}
-                      className={`relative h-16 w-24 sm:h-20 sm:w-28 flex-none shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                        selectedImgIdx === idx
-                          ? "border-slate-900 ring-2 ring-slate-900/20 shadow-md"
-                          : "border-slate-200 opacity-70 hover:opacity-100 bg-slate-950"
-                      }`}
+                      aria-label="Scroll left"
+                      onClick={() => scrollThumbnails("left")}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-md hover:bg-slate-900 transition-all focus:outline-none"
                     >
-                      {(() => {
-                        const thumbUrl = getImageUrl(img.storage_key);
-                        return thumbUrl ? (
-                          <img
-                            src={thumbUrl}
-                            alt={`Photo ${idx + 1}`}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.style.opacity = "0.3";
-                            }}
-                            className="h-full w-full object-contain bg-slate-950 p-0.5"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-[8px] font-bold">No img</div>
-                        );
-                      })()}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
-                  ))}
+                  )}
+                  {canScrollRight && (
+                    <button
+                      type="button"
+                      aria-label="Scroll right"
+                      onClick={() => scrollThumbnails("right")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-md hover:bg-slate-900 transition-all focus:outline-none"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                  <div
+                    ref={thumbnailScrollRef}
+                    className="flex gap-3 overflow-x-auto scrollbar-none flex-nowrap p-3 select-none scroll-smooth"
+                  >
+                    {images.map((img, idx) => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setSelectedImgIdx(idx)}
+                        className={`relative h-16 w-24 sm:h-20 sm:w-28 flex-none shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                          selectedImgIdx === idx
+                            ? "border-slate-900 ring-2 ring-slate-900/20 shadow-md"
+                            : "border-slate-200 opacity-70 hover:opacity-100 bg-slate-950"
+                        }`}
+                      >
+                        {(() => {
+                          const thumbUrl = getImageUrl(img.storage_key);
+                          return thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={`Photo ${idx + 1}`}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.style.opacity = "0.3";
+                              }}
+                              className="h-full w-full object-contain bg-slate-950 p-0.5"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-[8px] font-bold">No img</div>
+                          );
+                        })()}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
