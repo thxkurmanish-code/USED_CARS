@@ -66,10 +66,10 @@ def seed_database():
                 session.add(admin)
                 print(f"[SUCCESS] Single Production Admin user created for {prod_email}")
             else:
-                admin.password_hash = hash_password(prod_pass)
-                admin.role = UserRole.ADMIN
-                admin.is_active = True
-                print(f"[INFO] Verified single Production Admin user for {prod_email}")
+                if admin.role != UserRole.ADMIN or not admin.is_active:
+                    admin.role = UserRole.ADMIN
+                    admin.is_active = True
+                    print(f"[INFO] Verified single Production Admin user for {prod_email}")
 
             session.commit()
             return
