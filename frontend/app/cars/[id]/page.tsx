@@ -49,9 +49,8 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const scrollThumbnails = (direction: "left" | "right") => {
     const el = thumbnailScrollRef.current;
     if (!el) return;
-    const scrollAmount = el.clientWidth * 0.75;
     el.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
+      left: direction === "right" ? 280 : -280,
       behavior: "smooth",
     });
   };
@@ -123,20 +122,20 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8 overflow-x-hidden">
-        <div className="flex items-center justify-between">
-          <Link href="/cars" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900">
+      <main className="mx-auto w-full max-w-7xl min-w-0 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center justify-between gap-4">
+          <Link href="/cars" className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900">
             ← Back to Marketplace
           </Link>
           <TrustBadge isVerified={car.is_verified} sellerType={car.seller_type} />
         </div>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-12">
+        <div className="mt-6 grid min-w-0 w-full gap-8 lg:grid-cols-12">
           {/* Left Column: Gallery & Specifications */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="min-w-0 w-full lg:col-span-8 space-y-8">
             {/* Main Photo Viewer & Single Horizontal Thumbnail Carousel */}
-            <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-              <div className="relative w-full h-auto lg:aspect-[16/9] bg-slate-950 flex items-center justify-center overflow-hidden vehicle-main-image-frame">
+            <div className="min-w-0 w-full overflow-hidden rounded-3xl border bg-white shadow-sm">
+              <div className="relative w-full min-w-0 h-auto lg:aspect-[16/9] bg-slate-950 flex items-center justify-center overflow-hidden vehicle-main-image-frame">
                 {(() => {
                   const imgUrl = getImageUrl(mainImageKey);
                   return imgUrl ? (
@@ -148,7 +147,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                       }}
-                      className="block w-full h-auto lg:h-full lg:w-full object-contain vehicle-main-image"
+                      className="block w-full max-w-full h-auto lg:h-full lg:w-full object-contain vehicle-main-image"
                     />
                   ) : null;
                 })()}
@@ -160,7 +159,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
               {/* Single Horizontal Scrollable Thumbnail Carousel with Left / Right Scroll Arrows */}
               {images.length > 1 && (
-                <div className="relative group border-t bg-white">
+                <div className="relative group border-t bg-white min-w-0 w-full">
                   {canScrollLeft && (
                     <button
                       type="button"
@@ -187,7 +186,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   )}
                   <div
                     ref={thumbnailScrollRef}
-                    className="flex gap-3 overflow-x-auto scrollbar-none flex-nowrap p-3 select-none scroll-smooth"
+                    className="flex min-w-0 max-w-full gap-3 overflow-x-auto scrollbar-none flex-nowrap p-3 select-none scroll-smooth bg-white"
                   >
                     {images.map((img, idx) => (
                       <button
@@ -225,7 +224,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Owner / Admin Photo Upload Manager */}
             {isOwnerOrAdmin && (
-              <div className="rounded-3xl border bg-white p-6 shadow-sm">
+              <div className="min-w-0 w-full rounded-3xl border bg-white p-6 shadow-sm">
                 <ImageUploader
                   listingId={car.id}
                   images={car.images || []}
@@ -238,51 +237,51 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
 
             {/* Vehicle Overview */}
-            <div className="rounded-3xl border bg-white p-6 shadow-sm">
+            <div className="min-w-0 w-full rounded-3xl border bg-white p-6 shadow-sm">
               <h3 className="font-display text-xl font-bold text-slate-900">Vehicle Overview</h3>
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
+              <div className="mt-6 grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Year</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{car.manufacturing_year}</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900 break-words">{car.manufacturing_year}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Kilometers</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{car.kilometers_driven.toLocaleString("en-IN")} km</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900 break-words">{car.kilometers_driven.toLocaleString("en-IN")} km</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Fuel Type</p>
-                  <p className="mt-1 text-lg font-bold capitalize text-slate-900">{car.fuel_type}</p>
+                  <p className="mt-1 text-lg font-bold capitalize text-slate-900 break-words">{car.fuel_type}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Transmission</p>
-                  <p className="mt-1 text-lg font-bold capitalize text-slate-900">{car.transmission}</p>
+                  <p className="mt-1 text-lg font-bold capitalize text-slate-900 break-words">{car.transmission}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Body Type</p>
-                  <p className="mt-1 text-lg font-bold capitalize text-slate-900">{car.body_type}</p>
+                  <p className="mt-1 text-lg font-bold capitalize text-slate-900 break-words">{car.body_type}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Owners</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{car.owner_count} Owner</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900 break-words">{car.owner_count} Owner</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Location</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{car.city}, {car.state}</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900 break-words">{car.city}, {car.state}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="min-w-0 rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-500 uppercase">Seller Type</p>
-                  <p className="mt-1 text-lg font-bold capitalize text-slate-900">{car.seller_type}</p>
+                  <p className="mt-1 text-lg font-bold capitalize text-slate-900 break-words">{car.seller_type}</p>
                 </div>
               </div>
             </div>
 
             {/* Features */}
             {car.features && car.features.length > 0 && (
-              <div className="rounded-3xl border bg-white p-6 shadow-sm">
+              <div className="min-w-0 w-full rounded-3xl border bg-white p-6 shadow-sm">
                 <h3 className="font-display text-xl font-bold text-slate-900">Installed Features</h3>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex min-w-0 flex-wrap gap-2">
                   {car.features.map((feature, idx) => (
-                    <span key={idx} className="rounded-xl bg-slate-100 px-3.5 py-2 text-xs font-semibold text-slate-700">
+                    <span key={idx} className="min-w-0 break-words rounded-xl bg-slate-100 px-3.5 py-2 text-xs font-semibold text-slate-700">
                       ✓ {feature}
                     </span>
                   ))}
@@ -291,53 +290,53 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
             )}
 
             {/* Description */}
-            <div className="rounded-3xl border bg-white p-6 shadow-sm">
+            <div className="min-w-0 w-full rounded-3xl border bg-white p-6 shadow-sm">
               <h3 className="font-display text-xl font-bold text-slate-900">Seller Description</h3>
-              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">{car.description}</p>
+              <p className="mt-4 min-w-0 break-words whitespace-pre-line text-sm leading-relaxed text-slate-600">{car.description}</p>
             </div>
           </div>
 
           {/* Right Column: Pricing & Buyer Actions Card */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="lg:sticky lg:top-20 rounded-3xl border bg-white p-6 shadow-lg space-y-6">
-              <div>
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{car.brand}</span>
-                <h1 className="text-2xl font-extrabold text-slate-900">{car.brand} {car.model}</h1>
-                {car.variant && <p className="text-sm text-slate-500">{car.variant}</p>}
+          <div className="min-w-0 w-full lg:col-span-4 space-y-6">
+            <div className="min-w-0 w-full lg:sticky lg:top-20 rounded-3xl border bg-white p-6 shadow-lg space-y-6">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block min-w-0 break-words">{car.brand}</span>
+                <h1 className="text-2xl font-extrabold text-slate-900 min-w-0 break-words">{car.brand} {car.model}</h1>
+                {car.variant && <p className="text-sm text-slate-500 min-w-0 break-words">{car.variant}</p>}
                 
-                <div className="mt-4 flex items-baseline justify-between border-t pt-4">
-                  <span className="text-xs font-semibold text-slate-500">Asking Price</span>
-                  <span className="text-3xl font-extrabold text-slate-900">₹{Number(car.price).toLocaleString("en-IN")}</span>
+                <div className="mt-4 flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-t pt-4">
+                  <span className="text-xs font-semibold text-slate-500 shrink-0">Asking Price</span>
+                  <span className="min-w-0 break-words text-right text-3xl font-extrabold text-slate-900">₹{Number(car.price).toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
               {/* Primary Actions */}
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-2 min-w-0 w-full">
                 <button
                   onClick={() => setIsTestDriveOpen(true)}
-                  className="w-full rounded-2xl bg-emerald-600 py-3.5 font-bold text-white shadow-lg transition hover:bg-emerald-700"
+                  className="w-full min-w-0 whitespace-normal break-words rounded-2xl bg-emerald-600 px-4 py-3.5 font-bold text-white shadow-lg transition hover:bg-emerald-700"
                 >
                   🚗 Request Test Drive
                 </button>
 
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="w-full rounded-2xl bg-slate-900 py-3.5 font-bold text-white shadow-lg transition hover:bg-slate-800"
+                  className="w-full min-w-0 whitespace-normal break-words rounded-2xl bg-slate-900 px-4 py-3.5 font-bold text-white shadow-lg transition hover:bg-slate-800"
                 >
                   💬 Chat with Dream Car Bazaar
                 </button>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 min-w-0 w-full">
                   <button
                     onClick={() => setIsContactModalOpen(true)}
-                    className="rounded-2xl border border-slate-200 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    className="w-full min-w-0 whitespace-normal break-words rounded-2xl border border-slate-200 px-2 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50"
                   >
                     Send Message
                   </button>
 
                   <button
                     onClick={toggleWishlist}
-                    className={`rounded-2xl border py-3 text-xs font-bold transition ${
+                    className={`w-full min-w-0 whitespace-normal break-words rounded-2xl border px-2 py-3 text-xs font-bold transition ${
                       isSaved ? "bg-red-50 text-red-600 border-red-200" : "border-slate-200 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -345,10 +344,10 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   </button>
                 </div>
 
-                <div className="border-t pt-3 text-center">
+                <div className="border-t pt-3 text-center min-w-0">
                   <button
                     onClick={() => setIsReportOpen(true)}
-                    className="text-xs font-medium text-slate-400 hover:text-red-600 hover:underline"
+                    className="text-xs font-medium text-slate-400 hover:text-red-600 hover:underline min-w-0 break-words"
                   >
                     🚩 Report this listing
                   </button>
