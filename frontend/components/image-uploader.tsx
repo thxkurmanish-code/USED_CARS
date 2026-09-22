@@ -98,7 +98,7 @@ export function ImageUploader({ listingId, images, onImagesUpdated }: ImageUploa
                       e.currentTarget.style.display = "none";
                       e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                     }}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain p-0.5 bg-slate-900"
                   />
                 ) : null;
               })()}

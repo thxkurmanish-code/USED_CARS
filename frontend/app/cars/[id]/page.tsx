@@ -114,7 +114,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                       }}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain bg-slate-950"
                     />
                   ) : null;
                 })()}
@@ -144,7 +144,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                               e.currentTarget.onerror = null;
                               e.currentTarget.style.opacity = "0.3";
                             }}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain bg-slate-900"
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-[8px] font-bold">No img</div>
@@ -176,7 +176,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                       <div
                         key={img.id}
                         onClick={() => setSelectedImgIdx(idx)}
-                        className={`cursor-pointer overflow-hidden rounded-2xl border aspect-video transition hover:opacity-90 ${
+                        className={`cursor-pointer overflow-hidden rounded-2xl border aspect-video transition hover:opacity-90 bg-slate-900 ${
                           selectedImgIdx === idx ? "ring-2 ring-slate-900" : ""
                         }`}
                       >
@@ -190,7 +190,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                                 e.currentTarget.onerror = null;
                                 e.currentTarget.style.opacity = "0.3";
                               }}
-                              className="h-full w-full object-cover"
+                              className="h-full w-full object-contain p-0.5"
                             />
                           ) : (
                             <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs font-bold">No image</div>
