@@ -89,7 +89,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8 overflow-x-hidden">
         <div className="flex items-center justify-between">
           <Link href="/cars" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900">
             ← Back to Marketplace

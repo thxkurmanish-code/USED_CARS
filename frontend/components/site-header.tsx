@@ -13,8 +13,8 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full min-w-full border-b border-slate-200 bg-white shadow-sm">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 left-0 right-0 inset-x-0 z-50 w-full min-w-full border-b border-slate-200 bg-white shadow-sm">
+      <nav className="mx-auto flex max-w-7xl w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Top-Left Brand Logo - Perfect alignment with page container */}
         <Link href="/" onClick={() => setMobileMenuOpen(false)} className="shrink-0">
           <BrandMark />
