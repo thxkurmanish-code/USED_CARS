@@ -100,9 +100,9 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
         <div className="mt-6 grid gap-8 lg:grid-cols-12">
           {/* Left Column: Gallery & Specifications */}
           <div className="lg:col-span-8 space-y-8">
-            {/* Main Photo Viewer */}
-            <div className="overflow-hidden rounded-3xl border bg-slate-100 shadow-sm">
-              <div className="relative aspect-[16/10] w-full bg-slate-900">
+            {/* Main Photo Viewer & Single Horizontal Thumbnail Carousel */}
+            <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-slate-950 flex items-center justify-center">
                 {(() => {
                   const imgUrl = getImageUrl(mainImageKey);
                   return imgUrl ? (
@@ -114,7 +114,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                       }}
-                      className="h-full w-full object-contain bg-slate-950"
+                      className="h-full w-full object-contain"
                     />
                   ) : null;
                 })()}
@@ -124,14 +124,18 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               </div>
 
+              {/* Single Horizontal Scrollable Thumbnail Carousel */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto p-3 bg-white border-t">
+                <div className="flex gap-3 overflow-x-auto flex-nowrap p-3 bg-white border-t select-none">
                   {images.map((img, idx) => (
                     <button
                       key={img.id}
+                      type="button"
                       onClick={() => setSelectedImgIdx(idx)}
-                      className={`relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                        selectedImgIdx === idx ? "border-slate-900 ring-2 ring-slate-900/20" : "border-transparent opacity-70 hover:opacity-100"
+                      className={`relative h-16 w-24 sm:h-20 sm:w-28 flex-none shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                        selectedImgIdx === idx
+                          ? "border-slate-900 ring-2 ring-slate-900/20 shadow-md"
+                          : "border-slate-200 opacity-70 hover:opacity-100 bg-slate-950"
                       }`}
                     >
                       {(() => {
@@ -139,12 +143,12 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         return thumbUrl ? (
                           <img
                             src={thumbUrl}
-                            alt="Car thumbnail"
+                            alt={`Photo ${idx + 1}`}
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.style.opacity = "0.3";
                             }}
-                            className="h-full w-full object-contain bg-slate-900"
+                            className="h-full w-full object-contain bg-slate-950 p-0.5"
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-[8px] font-bold">No img</div>
@@ -156,8 +160,8 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               )}
             </div>
 
-            {/* Photo Gallery & Owner/Admin Photo Manager Section */}
-            {isOwnerOrAdmin ? (
+            {/* Owner / Admin Photo Upload Manager */}
+            {isOwnerOrAdmin && (
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
                 <ImageUploader
                   listingId={car.id}
@@ -167,40 +171,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   }}
                 />
               </div>
-            ) : (
-              images.length > 0 && (
-                <div className="rounded-3xl border bg-white p-6 shadow-sm">
-                  <h3 className="font-display text-xl font-bold text-slate-900 mb-4">Vehicle Photo Gallery ({images.length})</h3>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {images.map((img, idx) => (
-                      <div
-                        key={img.id}
-                        onClick={() => setSelectedImgIdx(idx)}
-                        className={`cursor-pointer overflow-hidden rounded-2xl border aspect-video transition hover:opacity-90 bg-slate-900 ${
-                          selectedImgIdx === idx ? "ring-2 ring-slate-900" : ""
-                        }`}
-                      >
-                        {(() => {
-                          const galleryUrl = getImageUrl(img.storage_key);
-                          return galleryUrl ? (
-                            <img
-                              src={galleryUrl}
-                              alt={`Photo ${idx + 1}`}
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.style.opacity = "0.3";
-                              }}
-                              className="h-full w-full object-contain p-0.5"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs font-bold">No image</div>
-                          );
-                        })()}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
             )}
 
 
