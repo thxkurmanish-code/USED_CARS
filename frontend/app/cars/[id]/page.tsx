@@ -102,7 +102,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
           <div className="lg:col-span-8 space-y-8">
             {/* Main Photo Viewer & Single Horizontal Thumbnail Carousel */}
             <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-slate-950 flex items-center justify-center">
+              <div className="relative w-full h-auto sm:aspect-[16/9] bg-slate-950 flex items-center justify-center overflow-hidden">
                 {(() => {
                   const imgUrl = getImageUrl(mainImageKey);
                   return imgUrl ? (
@@ -114,7 +114,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement?.querySelector(".no-img-placeholder")?.classList.remove("hidden");
                       }}
-                      className="h-full w-full object-contain"
+                      className="block w-full h-auto sm:h-full sm:w-full object-contain"
                     />
                   ) : null;
                 })()}
